@@ -10,53 +10,49 @@ CREATE TABLE IF NOT EXISTS users (
 
     profile_image_url TEXT,
 
-    refresh_token_hash TEXT,
+    refresh_token TEXT,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS properties (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-    owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    CREATE TABLE IF NOT EXISTS properties (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    property_type VARCHAR(20) NOT NULL CHECK (property_type IN ('house','pg')),
+      owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
-    title VARCHAR(150) NOT NULL,
-    description TEXT,
+      property_type VARCHAR(20) NOT NULL CHECK (property_type IN ('house','pg')),
 
-    bhk INT CHECK (bhk > 0),
-    furnishing VARCHAR(20) CHECK (furnishing IN ('unfurnished','semi','fully')),
+      title VARCHAR(150) NOT NULL,
+      description TEXT,
 
-    address TEXT NOT NULL,
-    city VARCHAR(100) NOT NULL,
-    state VARCHAR(100) NOT NULL,
-    pincode VARCHAR(10),
+      bhk INT CHECK (bhk > 0),
+      furnishing VARCHAR(20) CHECK (furnishing IN ('unfurnished','semi','fully')),
 
-    rent_amount NUMERIC(10,2) NOT NULL CHECK (rent_amount > 0),
-    security_deposit NUMERIC(10,2) CHECK (security_deposit >= 0),
+      address TEXT NOT NULL,
+      city VARCHAR(100) NOT NULL,
+      state VARCHAR(100) NOT NULL,
+      pincode VARCHAR(10),
 
-    total_rooms INT CHECK (total_rooms >= 0),
-    available_rooms INT CHECK (available_rooms >= 0),
+      rent_amount NUMERIC(10,2) NOT NULL CHECK (rent_amount > 0),
+      security_deposit NUMERIC(10,2) CHECK (security_deposit >= 0),
 
-    is_available BOOLEAN DEFAULT TRUE,
+      total_rooms INT CHECK (total_rooms >= 0),
+      available_rooms INT CHECK (available_rooms >= 0),
 
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+      image_url TEXT,
 
+      is_available BOOLEAN DEFAULT TRUE,
 
-CREATE TABLE IF NOT EXISTS property_images (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
 
-    property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
-
-    image_url TEXT NOT NULL,
-
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
+    CREATE INDEX IF NOT EXISTS idx_properties_owner ON properties(owner_id);
+    CREATE INDEX IF NOT EXISTS idx_properties_city ON properties(city);
+    CREATE INDEX IF NOT EXISTS idx_properties_price ON properties(rent_amount);
 
 CREATE TABLE IF NOT EXISTS rental_agreements (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -67,8 +63,10 @@ CREATE TABLE IF NOT EXISTS rental_agreements (
 
     start_date DATE NOT NULL,
     end_date DATE NOT NULL CHECK (end_date > start_date),
+    notice_period INT CHECK (notice_period >= 0),
 
     monthly_rent NUMERIC(10,2) NOT NULL CHECK (monthly_rent > 0),
+    security_paid BOOLEAN DEFAULT FALSE,
 
     agreement_document_url TEXT,
 

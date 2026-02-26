@@ -5,6 +5,7 @@ export const generateAccessToken = (user) => {
   return jwt.sign(
     {
       id: user.id,
+      email: user.email,
       role: user.role
     },
     process.env.ACCES_TOKEN_SECRET,

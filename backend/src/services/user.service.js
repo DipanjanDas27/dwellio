@@ -26,6 +26,7 @@ export const getProfile = async (userId) => {
 export const updateProfileDetails = async ({
   userId,
   full_name,
+  email,
   phone,
 }) => {
   const existingUser = await getUserById(userId);
@@ -33,6 +34,7 @@ export const updateProfileDetails = async ({
 
   const updatedUser = await updateUser(userId, {
     full_name,
+    email,
     phone,
   });
 

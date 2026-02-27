@@ -31,15 +31,6 @@ export const createRentalTable = async () => {
   `;
 
   await pool.query(query);
-  await pool.query(`
-  ALTER TABLE rental_agreements
-  ADD CONSTRAINT no_overlapping_rentals
-  EXCLUDE USING gist (
-    property_id WITH =,
-    daterange(start_date, end_date, '[]') WITH &&
-  )
-  WHERE (status = 'active');
-`);
 };
 
 export const createRental = async (data, db = pool) => {

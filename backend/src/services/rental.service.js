@@ -16,6 +16,7 @@ import sendMail from "./mail.service.js";
 import { ApiError } from "../utils/apiError.js";
 import { createPaymentService } from "./payment.service.js";
 import { getPaymentByIdempotencyKey } from "../models/payment.model.js";
+import { processDummyPayment, processDummyRefund } from "./dummyGateway.service.js";
 import { uploadOnCloudinary } from "../config/cloudinary.js";
 
 export const createRentalService = async ({
@@ -26,10 +27,9 @@ export const createRentalService = async ({
   notice_period,
   monthly_rent,
   file,
-  gatewayResponse,
   idempotency_key,
+  paymentMode = "auto",
 }) => {
-  const client = await pool.connect();
 
   if (!idempotency_key)
     throw new ApiError(400, "Idempotency key required");
@@ -48,22 +48,38 @@ export const createRentalService = async ({
     };
   }
 
+  const tenant = await getUserById(tenant_id);
+  if (!tenant) throw new ApiError(404, "Tenant not found");
+  if (tenant.role !== "tenant")
+    throw new ApiError(403, "Only tenants can create rental");
+
+  const property = await getPropertyById(property_id);
+  if (!property) throw new ApiError(404, "Property not found");
+
+  const gatewayResponse = await processDummyPayment({
+    amount: property.security_deposit,
+    mode: paymentMode,
+  });
+
+  if (gatewayResponse?.status !== "success") {
+    return {
+      payment_status: "failed",
+      reason: gatewayResponse?.reason || "Payment failed",
+    };
+  }
+
+  const client = await pool.connect();
+
   try {
     await client.query("BEGIN");
 
-    const tenant = await getUserById(tenant_id, client);
-    if (!tenant) throw new ApiError(404, "Tenant not found");
-    if (tenant.role !== "tenant")
-      throw new ApiError(403, "Only tenants can create rental");
-
-    const property = await getPropertyById(
+    const lockedProperty = await getPropertyById(
       property_id,
       client,
       true
     );
 
-    if (!property) throw new ApiError(404, "Property not found");
-    if (property.available_rooms <= 0)
+    if (lockedProperty?.available_rooms <= 0)
       throw new ApiError(400, "No rooms available");
 
     let agreement_document_url = null;
@@ -80,7 +96,7 @@ export const createRentalService = async ({
       {
         property_id,
         tenant_id,
-        owner_id: property.owner_id,
+        owner_id: lockedProperty.owner_id,
         start_date,
         end_date,
         notice_period,
@@ -96,42 +112,58 @@ export const createRentalService = async ({
       {
         agreement_id: rental.id,
         tenant_id,
-        owner_id: property.owner_id,
-        amount: property.security_deposit,
+        owner_id: lockedProperty.owner_id,
+        amount: lockedProperty.security_deposit,
         idempotency_key,
         gatewayResponse,
       },
       client
     );
 
-    if (payment.payment_status !== "success") {
+    if (payment?.payment_status !== "success") {
       await client.query("COMMIT");
       return { rental, payment_status: "failed" };
     }
 
     await updateRentalAfterPayment(rental.id, client);
 
-    const updatedRooms = property.available_rooms - 1;
+    const updatedRooms = lockedProperty?.available_rooms - 1;
 
     await updatePropertyAvailability(
-      property.id,
+      lockedProperty.id,
       updatedRooms,
       updatedRooms > 0,
       client
     );
 
     await client.query("COMMIT");
+
     sendMail({
-      to: owner.email,
-      subject: "New Rental Request - Dwellio",
-      html: `<p>You have received a rental request for "${property.title}".</p>`,
+      to: tenant.email,
+      subject: "Rental Activated - Dwellio",
+      html: `<p>Your rental has been activated successfully.</p>`,
     });
 
-    return { rental, payment, rental_status: "active" };
+    return {
+      rental_status: "active",
+      rental,
+      payment,
+      transaction_id: gatewayResponse.transaction_id,
+    };
 
   } catch (error) {
+
     await client.query("ROLLBACK");
-    throw error;
+
+    await processDummyRefund({
+      transaction_id: gatewayResponse.transaction_id,
+    });
+
+    throw new ApiError(
+      500,
+      "Rental failed after payment. Refund initiated."
+    );
+
   } finally {
     client.release();
   }

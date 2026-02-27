@@ -102,19 +102,20 @@ export const updateProfileImage = async (userId, profile_image_url) => {
 
 export const updateUser = async (
   userId,
-  { full_name, phone }
+  { full_name, email, phone }
 ) => {
   const query = `
     UPDATE users
     SET
       full_name = COALESCE($1, full_name),
-      phone = COALESCE($2, phone),
+      email = COALESCE($2, email),
+      phone = COALESCE($3, phone),
       updated_at = CURRENT_TIMESTAMP
     WHERE id = $4
     RETURNING id, full_name, email, role, updated_at;
   `;
 
-  const values = [full_name, phone, userId];
+  const values = [full_name, email, phone, userId];
 
   const { rows } = await pool.query(query, values);
   return rows[0];

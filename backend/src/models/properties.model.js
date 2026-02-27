@@ -37,7 +37,7 @@ export const createPropertiesTable = async () => {
     CREATE INDEX IF NOT EXISTS idx_properties_owner ON properties(owner_id);
     CREATE INDEX IF NOT EXISTS idx_properties_city ON properties(city);
     CREATE INDEX IF NOT EXISTS idx_properties_price ON properties(rent_amount);
-    CREATE INDEX idx_property_rooms ON properties(available_rooms);
+    CREATE INDEX IF NOT EXISTS idx_property_rooms ON properties(available_rooms);
   `;
 
   await pool.query(query);

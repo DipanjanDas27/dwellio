@@ -66,7 +66,7 @@ export const sendForgotPasswordOtpService = async (email) => {
     );
 
     const resetToken = generateResetToken(user);
-
+    
     await sendMail({
         to: email,
         subject: "Dwellio Password Reset OTP",

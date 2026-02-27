@@ -1,0 +1,139 @@
+ import { asyncHandler } from "../utils/asynchandler.js";
+import { ApiError } from "../utils/apiError.js";
+import { ApiResponse } from "../utils/apiResponse.js";
+
+import {
+  getCurrentUserService,
+  updateUserService,
+  updateUserImageService,
+  changePasswordService,
+  deleteUserService,
+} from "../services/user.service.js";
+
+export const getCurrentUser = asyncHandler(async (req, res) => {
+
+  const user = await getCurrentUserService(req.user.id);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user,
+        "User fetched successfully"
+      )
+    );
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
+
+  const updatedUser = await updateUserService({
+    userId: req.user.id,
+    updateData: req.body,
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updatedUser,
+        "Profile updated successfully"
+      )
+    );
+});
+
+export const updateProfileImage = asyncHandler(async (req, res) => {
+
+  if (!req.file)
+    throw new ApiError(400, "Image file required");
+
+  const updatedUser = await updateUserImageService({
+    userId: req.user.id,
+    file: req.file,
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updatedUser,
+        "Profile image updated successfully"
+      )
+    );
+});
+
+export const deleteAccount = asyncHandler(async (req, res) => {
+
+  await deleteUserService(req.user.id);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        "Account deleted successfully"
+      )
+    );
+});
+
+export const changePassword = asyncHandler(async (req, res) => {
+
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword)
+    throw new ApiError(400, "Old password and new password are required");
+
+  const result = await changePassword({
+    userId: req.user.id,
+    oldPassword,
+    newPassword,
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        result.message
+      )
+    );
+});
+
+export const resetPassword = asyncHandler(async (req, res) => {
+
+  const { newPassword } = req.body;
+
+  const token =
+    req.cookies?.tempToken ||
+    req.header("Authorization")?.replace("Bearer ", "");
+
+  if (!token)
+    throw new ApiError(401, "Reset token missing");
+
+  if (!newPassword)
+    throw new ApiError(400, "New password is required");
+
+  const result = await resetPassword({
+    token,
+    newPassword,
+  });
+
+  return res
+    .status(200)
+    .clearCookie("tempToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    })
+    .json(
+      new ApiResponse(
+        200,
+        {},
+        result.message
+      )
+    );
+});

@@ -1,10 +1,10 @@
 import {
   getUserById,
-  getUserByEmail,
   updateUser,
   updateProfileImage,
   updateRefreshToken,
   updateUserPassword,
+  deleteUser,
 } from "../models/user.model.js";
 
 import { hashPassword, comparePassword } from "../utils/hash.js";
@@ -103,29 +103,6 @@ export const changePassword = async ({
   return { message: "Password updated successfully" };
 };
 
-
-
-export const forgotPassword = async (email) => {
-  const user = await getUserByEmail(email);
-  if (!user) throw new ApiError(404, "User not found");
-
-  const resetToken = generateAccessToken({
-    id: user.id,
-    role: user.role,
-  });
-
-  sendMail({
-    to: user.email,
-    subject: "Password Reset - Rentora",
-    html: `<p>Click below to reset password:</p>
-           <p>http://yourfrontend.com/reset-password?token=${resetToken}</p>`,
-  });
-
-  return { message: "Password reset email sent" };
-};
-
-
-
 export const resetPassword = async ({
   token,
   newPassword,
@@ -151,4 +128,13 @@ export const resetPassword = async ({
   });
 
   return { message: "Password reset successfully" };
+};
+
+export const deleteUserService = async (userId) => {
+  const user = await getUserById(userId);
+  if (!user) throw new ApiError(404, "User not found");
+
+  await updateRefreshToken(userId, null);
+
+  return await deleteUser(userId);
 };

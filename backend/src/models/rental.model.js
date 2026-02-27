@@ -11,6 +11,7 @@ export const createRentalTable = async () => {
 
       start_date DATE NOT NULL,
       end_date DATE NOT NULL CHECK (end_date > start_date),
+      notice_period INT CHECK (notice_period >= 0),
 
       monthly_rent NUMERIC(10,2) NOT NULL CHECK (monthly_rent > 0),
       security_paid BOOLEAN DEFAULT FALSE,

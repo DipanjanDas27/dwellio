@@ -33,7 +33,7 @@ export const registerUser = async ({
 
   let profile_image_url = null;
 
-  if (file && file.path) {
+  if (file && file?.path) {
     const uploadResult = await uploadOnCloudinary(
       file.path,
       "dwellio/profile-images"

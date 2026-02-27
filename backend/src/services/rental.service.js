@@ -233,13 +233,36 @@ export const updateRentalStatusService = async ({
   return updatedRental;
 };
 
-export const deleteRentalService = async ({
+export const terminateRentalService = async ({
   rentalId,
-  userId,
 }) => {
+  const rental = await getRentalById(rentalId);
+
+  if (!rental)
+    throw new ApiError(404, "Rental not found");
+
+  const today = new Date().toISOString().split("T")[0];
+
+  if (rental.status !== "terminated" && rental.end_date < today) {
+    await updateRentalStatus(rentalId, "terminated");
+  }
+
+  return { message: "Rental terminated successfully" };
+};
+
+export const deleteRentalService = async (rentalId,userId) => {
+  const rental = await getRentalById(rentalId);
+
+  if (rental?.status !== "cancelled" && rental?.status !== "terminated")
+    throw new ApiError(404, "Only cancelled or terminated rentals can be deleted");
+
+  if(rental.owner_id !==  userId)
+    throw new ApiError(403, "Unauthorized to delete this rental");
+
   const deleted = await deleteRental(rentalId);
 
-  if (!deleted) throw new ApiError(404, "Rental not found");
+  if (!deleted)
+    throw new ApiError(404, "Rental not found");
 
   return { message: "Rental deleted successfully" };
-};
+}

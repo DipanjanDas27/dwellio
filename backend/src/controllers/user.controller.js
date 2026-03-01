@@ -1,11 +1,11 @@
- import { asyncHandler } from "../utils/asynchandler.js";
+ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
 import {
   getCurrentUserService,
-  updateUserService,
-  updateUserImageService,
+  updateProfileDetailsService,
+  updateUserProfileImageService,
   changePasswordService,
   resetPasswordService,
   deleteUserService,
@@ -28,9 +28,9 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
 
 export const updateProfile = asyncHandler(async (req, res) => {
 
-  const updatedUser = await updateUserService({
+  const updatedUser = await updateProfileDetailsService({
     userId: req.user.id,
-    updateData: req.body,
+    ...req.body,
   });
 
   return res
@@ -49,7 +49,7 @@ export const updateProfileImage = asyncHandler(async (req, res) => {
   if (!req.file)
     throw new ApiError(400, "Image file required");
 
-  const updatedUser = await updateUserImageService({
+  const updatedUser = await updateUserProfileImageService({
     userId: req.user.id,
     file: req.file,
   });

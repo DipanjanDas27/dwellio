@@ -17,7 +17,6 @@ import sendMail from "./mail.service.js";
 import { ApiError } from "../utils/apiError.js";
 import { createPayment, getPaymentByIdempotencyKey, updatePaymentStatus, getPaymentsByTenant } from "../models/payment.model.js";
 import { processDummyPayment, processDummyRefund } from "./dummyGateway.service.js";
-import { uploadOnCloudinary } from "../config/cloudinary.js";
 import { rentalActivatedTemplate, rentalCreatedTemplate, rentalCancelledTemplate, rentalRenewedTemplate, rentalTerminatedTemplate, ownerRentalActivatedTemplate, ownerRentalRequestTemplate, ownerRentalCancelledTemplate, ownerRentalRenewedTemplate, ownerRentalTerminatedTemplate } from "../templates/rentalMail.template.js"
 
 import { paymentCreatedTemplate, paymentFailedTemplate, paymentSuccessTemplate, ownerPaymentReceivedTemplate } from "../templates/paymentMail.template.js";

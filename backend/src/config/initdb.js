@@ -1,5 +1,5 @@
 import { createPaymentsTable } from "../models/payment.model.js";
-import { createPropertiesTable } from "../models/properties.model.js";
+import { createPropertiesTable } from "../models/property.model.js";
 import { createRentalTable } from "../models/rental.model.js";
 import { createUsersTable } from "../models/user.model.js";
 import { pool } from "./db.js";

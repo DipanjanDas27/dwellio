@@ -15,7 +15,7 @@ import { ApiError } from "../utils/apiError.js";
 import { passwordUpdatedTemplate, accountDeletedTemplate, passwordResetSuccessTemplate } from "../templates/userMail.template.js";
 
 
-export const getProfile = async (userId) => {
+export const getCurrentUserService = async (userId) => {
   const user = await getUserById(userId);
   if (!user) throw new ApiError(404, "User not found");
   return user;
@@ -23,7 +23,7 @@ export const getProfile = async (userId) => {
 
 
 
-export const updateProfileDetails = async ({
+export const updateProfileDetailsService = async ({
   userId,
   full_name,
   email,
@@ -43,7 +43,7 @@ export const updateProfileDetails = async ({
 
 
 
-export const updateUserProfileImage = async ({ userId, file }) => {
+export const updateUserProfileImageService = async ({ userId, file }) => {
   const existingUser = await getUserById(userId);
   if (!existingUser) throw new ApiError(404, "User not found");
 

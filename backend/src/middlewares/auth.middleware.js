@@ -1,5 +1,5 @@
 import { verifyAccessToken } from "../utils/token.js";
-import { asyncHandler } from "../utils/asynchandler.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { getUserById } from "../models/user.model.js";
 

@@ -16,8 +16,8 @@ import {
 
 export const createRental = asyncHandler(async (req, res) => {
 
-  const {propertyId} =req.params;
-  
+  const { propertyId } = req.params;
+
   const {
     start_date,
     end_date,
@@ -49,6 +49,9 @@ export const createRental = asyncHandler(async (req, res) => {
     paymentMode,
   });
 
+  if (!rental) {
+    throw new ApiError(500, "Failed to create rental");
+  }
   return res
     .status(201)
     .json(

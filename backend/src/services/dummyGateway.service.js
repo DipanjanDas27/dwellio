@@ -6,17 +6,17 @@ export const processDummyPayment = async ({
 }) => {
 
     if (!amount || amount <= 0) {
-        throw new ApiError(400, "Invalid amount");
+        return { status: "failed", reason: "invalid amount" };
     }
 
     if (mode === "network_error") {
-        throw new ApiError(503, "Gateway timeout");
+        return { status: "failed", reason: "network error" };
     }
 
     if (mode === "card_declined") {
         return { status: "failed", reason: "Card declined" };
     }
-
+   
     if (mode === "auto") {
         const random = Math.random();
 
@@ -25,7 +25,7 @@ export const processDummyPayment = async ({
         }
 
         if (random < 0.25) {
-            throw new ApiError(503, "Network issue");
+           return { status: "failed", reason: "network error" };
         }
     }
     const transactionId = crypto

@@ -4,6 +4,7 @@ const errorHandler = (err, req, res, next) => {
 
     res.status(statusCode).json({
         success: err.success || false,
+        statusCode: statusCode,
         message: err.message || "Internal Server Error",
         errors: err.errors || [],
         data: err.data || null,

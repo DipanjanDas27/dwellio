@@ -92,6 +92,7 @@ export const loginUser = async ({ email, password }) => {
   });
 
   return {
+    user,
     accessToken,
     refreshToken,
   };
@@ -105,6 +106,7 @@ export const refreshAccessToken = async (incomingRefreshToken) => {
   const decoded = verifyRefreshToken(incomingRefreshToken);
 
   const user = await getUserById(decoded.id);
+  
   if (!user || !user.refresh_token_hash) {
     throw new ApiError(401, "Invalid refresh token");
   }

@@ -200,7 +200,7 @@ export const createRentalService = async ({
 
     await updateClient.query("COMMIT");
 
-    await sendMail({
+   await sendMail({
       to: tenant.email,
       subject: "Payment Successful - Dwellio",
       html: paymentSuccessTemplate(property.security_deposit),
@@ -214,7 +214,7 @@ export const createRentalService = async ({
         property.security_deposit
       ),
     });
-
+ 
     await sendMail({
       to: tenant.email,
       subject: "Rental Activated - Dwellio",
@@ -261,6 +261,8 @@ export const createRentalService = async ({
     updateClient.release();
   }
 };
+
+
 export const getTenantRentalsService = async (tenantId) => {
   const tenant = await getUserById(tenantId);
   if (!tenant) throw new ApiError(404, "Tenant not found");

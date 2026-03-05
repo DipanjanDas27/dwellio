@@ -73,7 +73,7 @@ export const login = asyncHandler(async (req, res) => {
     .cookie("accessToken", result.accessToken, accessOptions)
     .cookie("refreshToken", result.refreshToken, refreshOptions)
     .json(
-      new ApiResponse(200, {}, "Login successful")
+      new ApiResponse(200, result.user, "Login successful")
     );
 });
 

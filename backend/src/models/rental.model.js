@@ -25,9 +25,6 @@ export const createRentalTable = async () => {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     
-    ALTER TABLE rental_agreements
-    ADD COLUMN IF NOT EXISTS expected_termination_date DATE,
-    ADD COLUMN IF NOT EXISTS actual_termination_date DATE;
 
     CREATE INDEX IF NOT EXISTS idx_rental_tenant ON rental_agreements(tenant_id);
     CREATE INDEX IF NOT EXISTS idx_rental_owner ON rental_agreements(owner_id);

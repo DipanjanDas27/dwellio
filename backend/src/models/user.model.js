@@ -67,8 +67,7 @@ export const getUserByEmail = async (email) => {
 
 export const getUserById = async (id, db = pool) => {
   const query = `
-    SELECT id, full_name, email, role, profile_image_url, created_at, updated_at
-    FROM users
+    SELECT * FROM users
     WHERE id = $1;
   `;
   const { rows } = await db.query(query, [id]);

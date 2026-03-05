@@ -25,6 +25,7 @@ export const generateResetToken = (user) => {
   return jwt.sign(
     {
       id: user.id,
+      email: user.email,
       purpose: "password_reset",
     },
     process.env.RESET_TOKEN_SECRET,

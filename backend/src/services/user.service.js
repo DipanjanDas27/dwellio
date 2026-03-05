@@ -8,7 +8,7 @@ import {
 } from "../models/user.model.js";
 
 import { hashPassword, comparePassword } from "../utils/hash.js";
-import { verifyAccessToken } from "../utils/token.js";
+import { verifyResetToken } from "../utils/token.js";
 import { uploadOnCloudinary } from "../config/cloudinary.js";
 import sendMail from "./mail.service.js";
 import { ApiError } from "../utils/apiError.js";
@@ -104,7 +104,7 @@ export const resetPasswordService = async ({
   if (!newPassword)
     throw new ApiError(400, "New password is required");
 
-  const decoded = verifyAccessToken(token);
+  const decoded = verifyResetToken(token);
 
   const user = await getUserById(decoded.id);
   if (!user) throw new ApiError(404, "User not found");

@@ -33,7 +33,8 @@ export const createPropertyService = async ({
       file.path,
       "dwellio/properties"
     );
-    image_url = uploadResult.secure_url;
+
+    image_url = uploadResult?.secure_url;
   }
 
   const property = await createProperty({

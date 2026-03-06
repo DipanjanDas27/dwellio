@@ -23,7 +23,7 @@ router.get("/tenant/me", verifyAuth, requireRole("tenant"), getTenantRentals);
 router.get("/owner/me", verifyAuth, requireRole("owner"), getOwnerRentals);
 router.get("/:rentalId", verifyAuth, requireRole("tenant", "owner"), getRentalById);
 router.patch("/:rentalId/cancel", verifyAuth, requireRole("tenant"), strictLimiter, cancelRental);
-router.patch("/:rentalId/terminate", verifyAuth, strictLimiter, terminateRental);
+router.patch("/:rentalId/terminate", verifyAuth, requireRole("owner"), strictLimiter, terminateRental);
 router.patch("/:rentalId/renew", verifyAuth, requireRole("tenant"), strictLimiter, renewRental);
 router.post("/bulk/terminate-expired", verifyAuth, requireRole("owner"), bulkTerminateExpiredRentals);
 router.delete("/:rentalId", verifyAuth, requireRole("owner"), deleteRental);

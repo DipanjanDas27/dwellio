@@ -21,7 +21,15 @@ export const getCurrentUserService = async (userId) => {
   return user;
 };
 
+export const getUserDetailsService = async (userId) => {
+  if (!userId) throw new ApiError(400, "User id required");
 
+  const user = await getUserById(userId);
+
+  if (!user) throw new ApiError(404, "User not found");
+
+  return user;
+};
 
 export const updateProfileDetailsService = async ({
   userId,

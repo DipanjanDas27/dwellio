@@ -8,6 +8,7 @@ import { getCurrentUser, updateProfile, updateProfileImage, deleteAccount } from
 const router = express.Router();
 
 router.get("/me", verifyAuth, getCurrentUser);
+router.get("/:userId/details", verifyAuth, requireRole("tenant", "owner"), getUserDetails);
 router.patch("/me/updateprofile", verifyAuth, updateProfile);
 router.patch("/me/image", verifyAuth, upload.single("profileImage"), updateProfileImage);
 router.get("/:userId", verifyAuth, requireRole("owner", "tenant"), getCurrentUser);

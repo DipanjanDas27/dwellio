@@ -1,4 +1,4 @@
- import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
@@ -22,6 +22,26 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
         200,
         user,
         "User fetched successfully"
+      )
+    );
+});
+
+export const getUserDetails = asyncHandler(async (req, res) => {
+
+  const { userId } = req.params;
+
+  if (!userId)
+    throw new ApiError(400, "User id required");
+
+  const user = await getUserDetailsService(userId);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user,
+        "User details fetched successfully"
       )
     );
 });

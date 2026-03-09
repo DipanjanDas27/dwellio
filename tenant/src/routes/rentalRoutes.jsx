@@ -1,6 +1,6 @@
 import MyRentals from "../pages/rentals/MyRentals.jsx"
 import RentalDetails from "../pages/rentals/RentalDetails.jsx"
-import AuthLayout from "../components/AuthLayout.jsx"
+import AuthLayout from "../components/custom/AuthLayout.jsx"
 
 const rentalRoutes = [
   {
@@ -11,6 +11,7 @@ const rentalRoutes = [
       </AuthLayout>
     )
   },
+  
   {
     path: "/rentals/:rentalId",
     element: (

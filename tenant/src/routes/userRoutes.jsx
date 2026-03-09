@@ -1,7 +1,7 @@
 import Profile from "../pages/user/Profile.jsx"
 import UpdateProfile from "../pages/user/UpdateProfile.jsx"
 import UserDetails from "../pages/user/UserDetails.jsx"
-import AuthLayout from "../components/AuthLayout.jsx"
+import AuthLayout from "../components/custom/AuthLayout.jsx"
 
 const userRoutes = [
   {

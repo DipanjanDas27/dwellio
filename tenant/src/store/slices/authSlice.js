@@ -48,7 +48,7 @@ const authSlice = createSlice({
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null,
           state.isAuthenticated = false,
-          state.isInitialized = false
+          state.isInitialized = true
       })
 
     builder
@@ -102,6 +102,7 @@ const authSlice = createSlice({
         (state, action) => {
           state.loading = false
           state.error = action.payload
+          state.isInitialized = true
         }
       )
   }

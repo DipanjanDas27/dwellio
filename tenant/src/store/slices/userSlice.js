@@ -43,7 +43,7 @@ const userSlice = createSlice({
         state.userDetails = action.payload
       })
       .addCase(updateProfile.fulfilled, (state, action) => {
-        state.user = action.payload
+        state.user = { ...state.user, ...action.payload };
       })
       .addCase(updateProfileImage.fulfilled, (state, action) => {
         state.user = action.payload

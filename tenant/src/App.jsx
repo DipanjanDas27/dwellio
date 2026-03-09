@@ -1,8 +1,8 @@
 import React, { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { Outlet } from "react-router-dom"
-// import Navbar from "./components/Navbar"
-// import Footer from "./components/Footer"
+import Navbar from "./components/custom/Navbar"
+import Footer from "./components/custom/Footer"
 import { getCurrentUser } from "./services/userThunks"
 
 const App = () => {
@@ -23,11 +23,11 @@ const App = () => {
 
   return (
     <>
-      {/* <Navbar /> */}
+      <Navbar />
       <main className="min-h-screen bg-gray-50 p-4">
         <Outlet />
       </main>
-      {/* <Footer /> */}
+      <Footer />
     </>
   )
 }

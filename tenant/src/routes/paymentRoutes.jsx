@@ -1,6 +1,6 @@
 import Payments from "../pages/payments/Payments.jsx"
 import PaymentDetails from "../pages/payments/PaymentDetails.jsx"
-import AuthLayout from "../components/AuthLayout.jsx"
+import AuthLayout from "../components/custom/AuthLayout.jsx"
 
 const paymentRoutes = [
   {

@@ -134,12 +134,12 @@ export const getOwnerProperties = asyncHandler(async (req, res) => {
 
 export const getFilteredProperties = asyncHandler(async (req, res) => {
 
-  const { minPrice, maxPrice, city } = req.query;
+  const { minPrice, maxPrice, search } = req.query;
 
   const properties = await getFilteredPropertiesService({
-    minPrice: Number(minPrice),
-    maxPrice: Number(maxPrice),
-    city,
+    minPrice: minPrice ? Number(minPrice) : undefined,
+    maxPrice: maxPrice ? Number(maxPrice) : undefined,
+    search,
   });
 
   return res
@@ -152,7 +152,6 @@ export const getFilteredProperties = asyncHandler(async (req, res) => {
       )
     );
 });
-
 export const updateProperty = asyncHandler(async (req, res) => {
 
   const { propertyId } = req.params;

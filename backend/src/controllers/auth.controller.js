@@ -32,7 +32,8 @@ export const register = asyncHandler(async (req, res) => {
     password,
     role,
   } = req.body;
-  if([full_name, email, phone, password, role].some((field) => !field || field?.trim() === ""))
+
+  if ([full_name, email, phone, password, role].some((field) => !field || field?.trim() === ""))
     throw new ApiError(400, "All fields are required");
 
   const file = req.file;
@@ -46,6 +47,8 @@ export const register = asyncHandler(async (req, res) => {
     file,
   });
 
+  const { password_hash, refresh_token_hash, ...safeUser } = result.user;
+
   return res
     .status(201)
     .cookie("accessToken", result.accessToken, accessOptions)
@@ -53,7 +56,7 @@ export const register = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         201,
-        result.user,
+        safeUser,
         "User registered successfully"
       )
     );
@@ -68,12 +71,14 @@ export const login = asyncHandler(async (req, res) => {
 
   const result = await loginUser({ email, password });
 
+  const { password_hash, refresh_token_hash, ...safeUser } = result.user;
+
   return res
     .status(200)
     .cookie("accessToken", result.accessToken, accessOptions)
     .cookie("refreshToken", result.refreshToken, refreshOptions)
     .json(
-      new ApiResponse(200, result.user, "Login successful")
+      new ApiResponse(200, safeUser, "Login successful")
     );
 });
 

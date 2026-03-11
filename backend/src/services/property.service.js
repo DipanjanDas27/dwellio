@@ -76,18 +76,18 @@ export const getOwnerPropertiesService = async (ownerId) => {
 export const getFilteredPropertiesService = async ({
   minPrice,
   maxPrice,
-  city,
+  search,
 }) => {
-  if (!minPrice || !maxPrice || !city)
-    throw new ApiError(400, "Price range and city are required");
 
   const result = await getPropertiesByFilter({
     minPrice,
     maxPrice,
-    city,
+    search,
   });
+
   if (!result || result.length === 0)
-    throw new ApiError(404, "No properties found matching the criteria");
+    throw new ApiError(404, "No properties found");
+
   return result;
 };
 

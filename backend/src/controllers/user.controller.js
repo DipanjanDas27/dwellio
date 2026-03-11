@@ -15,16 +15,19 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
 
   const user = await getCurrentUserService(req.user.id);
 
+  const { password_hash, refresh_token_hash, ...safeUser } = user;
+
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        user,
+        safeUser,
         "User fetched successfully"
       )
     );
 });
+
 
 export const getUserDetails = asyncHandler(async (req, res) => {
 
@@ -35,16 +38,19 @@ export const getUserDetails = asyncHandler(async (req, res) => {
 
   const user = await getUserDetailsService(userId);
 
+  const { password_hash, refresh_token_hash, ...safeUser } = user;
+
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        user,
+        safeUser,
         "User details fetched successfully"
       )
     );
 });
+
 
 export const updateProfile = asyncHandler(async (req, res) => {
 

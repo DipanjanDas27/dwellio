@@ -18,10 +18,21 @@ export const uploadOnCloudinary = async (filePath, folder = "house-rent") => {
             unique_filename: true,
             secure: true,
         });
-        fs.unlinkSync(filePath)
-        return result;
+
+        const optimizedUrl = result.secure_url.replace(
+            "/upload/",
+            "/upload/w_500,q_auto,f_auto/"
+        );
+
+        fs.unlinkSync(filePath);
+
+        return {
+            ...result,
+            secure_url: optimizedUrl
+        };
+
     } catch (error) {
-        fs.unlinkSync(filePath)
+        fs.unlinkSync(filePath);
         console.error("Error uploading to Cloudinary:", error);
     }
 };

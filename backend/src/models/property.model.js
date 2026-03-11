@@ -90,25 +90,44 @@ export const createProperty = async (data) => {
 export const getPropertiesByFilter = async ({
   minPrice,
   maxPrice,
-  city,
+  search
 }) => {
-  const query = `
+
+  let query = `
     SELECT *
     FROM properties
-    WHERE rent_amount BETWEEN $1 AND $2
-      AND LOWER(city) = LOWER($3)
-      AND is_available = TRUE
-    ORDER BY rent_amount ASC;
-  `;
+    WHERE 1=1
+  `
 
-  const { rows } = await pool.query(query, [
-    minPrice,
-    maxPrice,
-    city,
-  ]);
+  const values = []
+  let index = 1
 
-  return rows;
-};
+  if (minPrice) {
+    query += ` AND rent_amount >= $${index++}`
+    values.push(minPrice)
+  }
+
+  if (maxPrice) {
+    query += ` AND rent_amount <= $${index++}`
+    values.push(maxPrice)
+  }
+
+  if (search) {
+    query += `
+      AND (
+        city ILIKE $${index}
+        OR address ILIKE $${index}
+        OR title ILIKE $${index}
+      )
+    `
+    values.push(`%${search}%`)
+    index++
+  }
+
+  const { rows } = await pool.query(query, values)
+
+  return rows
+}
 
 export const getPropertyById = async (id, db = pool, forUpdate = false) => {
   const query = `

@@ -12,8 +12,6 @@ const initialState = {
   loading: false,
   error: null,
   success: false,
-  isAuthenticated: false,
-  isInitialized: false,
 }
 
 const userSlice = createSlice({
@@ -28,17 +26,6 @@ const userSlice = createSlice({
   extraReducers: (builder) => {
 
     builder
-      .addCase(getCurrentUser.fulfilled, (state, action) => {
-        state.user = action.payload,
-          state.isAuthenticated = true,
-          state.isInitialized = true
-      })
-      .addCase(getCurrentUser.rejected, (state, action) => {
-        state.user = null,
-          state.isAuthenticated = false,
-          state.isInitialized = true,
-          state.error = null
-      })
       .addCase(getUserDetails.fulfilled, (state, action) => {
         state.userDetails = action.payload
       })

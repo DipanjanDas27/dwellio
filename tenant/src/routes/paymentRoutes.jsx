@@ -1,6 +1,8 @@
-import Payments from "../pages/payments/Payments.jsx"
-import PaymentDetails from "../pages/payments/PaymentDetails.jsx"
-import AuthLayout from "../components/custom/AuthLayout.jsx"
+import { lazy } from "react"
+import AuthLayout from "@/components/custom/AuthLayout"
+
+const Payments = lazy(() => import("@/pages/payments/Payments"))
+const PaymentDetails = lazy(() => import("@/pages/payments/PaymentDetails"))
 
 const paymentRoutes = [
   {
@@ -11,6 +13,7 @@ const paymentRoutes = [
       </AuthLayout>
     )
   },
+
   {
     path: "/payments/:paymentId",
     element: (

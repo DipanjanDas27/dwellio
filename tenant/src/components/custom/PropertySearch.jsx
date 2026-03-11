@@ -1,73 +1,138 @@
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useDispatch } from "react-redux"
 import { getFilteredProperties } from "@/services/tenantPropertyThunks.js"
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 
 const PropertySearch = () => {
+
   const dispatch = useDispatch()
 
-  const [filters, setFilters] = useState({
-    city: "",
-    minPrice: "",
-    maxPrice: ""
-  })
+  const [search, setSearch] = useState("")
+  const [minPrice, setMinPrice] = useState("")
+  const [maxPrice, setMaxPrice] = useState("")
+  const [suggestions, setSuggestions] = useState([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
 
-  const handleChange = (e) => {
-    setFilters({
-      ...filters,
-      [e.target.name]: e.target.value
-    })
-  }
+  const searchProperties = useCallback(() => {
 
-  const handleSearch = () => {
-    if (!filters.city || !filters.minPrice || !filters.maxPrice) return
-    dispatch(getFilteredProperties(filters))
+    if (!search && !minPrice && !maxPrice) return
+
+    dispatch(
+      getFilteredProperties({
+        search,
+        minPrice,
+        maxPrice
+      })
+    )
+
+  }, [dispatch, search, minPrice, maxPrice])
+
+  useEffect(() => {
+
+    const timer = setTimeout(() => {
+      searchProperties()
+    }, 500)
+
+    return () => clearTimeout(timer)
+
+  }, [searchProperties])
+
+  useEffect(() => {
+
+    if (!search) {
+      setSuggestions([])
+      return
+    }
+
+    const timer = setTimeout(async () => {
+
+      try {
+
+        const res = await dispatch(
+          getFilteredProperties({ search })
+        ).unwrap()
+
+        const cities = [
+          ...new Set(
+            res
+              .map(p => p.city)
+              .filter(Boolean)
+          )
+        ]
+
+        setSuggestions(cities.slice(0, 5))
+        setShowSuggestions(true)
+
+      } catch {}
+
+    }, 400)
+
+    return () => clearTimeout(timer)
+
+  }, [search, dispatch])
+
+  const selectSuggestion = (value) => {
+    setSearch(value)
+    setShowSuggestions(false)
   }
 
   return (
-    <div className="grid md:grid-cols-4 gap-4">
 
-      <div className="space-y-1">
-        <Label>City</Label>
+    <div className="flex gap-3 mb-6 relative">
+
+      <div className="relative w-full">
+
         <Input
-          name="city"
-          value={filters.city}
-          onChange={handleChange}
-          placeholder="Enter city"
+          placeholder="Search city or address"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onFocus={() => setShowSuggestions(true)}
         />
+
+        {showSuggestions && suggestions.length > 0 && (
+
+          <div className="absolute top-full left-0 w-full bg-white border rounded shadow z-10">
+
+            {suggestions.map((item, index) => (
+
+              <div
+                key={index}
+                onClick={() => selectSuggestion(item)}
+                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+              >
+                {item}
+              </div>
+
+            ))}
+
+          </div>
+
+        )}
+
       </div>
 
-      <div className="space-y-1">
-        <Label>Min Price</Label>
-        <Input
-          name="minPrice"
-          type="number"
-          value={filters.minPrice}
-          onChange={handleChange}
-        />
-      </div>
+      <Input
+        placeholder="Min Price"
+        type="number"
+        value={minPrice}
+        onChange={(e) => setMinPrice(e.target.value)}
+      />
 
-      <div className="space-y-1">
-        <Label>Max Price</Label>
-        <Input
-          name="maxPrice"
-          type="number"
-          value={filters.maxPrice}
-          onChange={handleChange}
-        />
-      </div>
+      <Input
+        placeholder="Max Price"
+        type="number"
+        value={maxPrice}
+        onChange={(e) => setMaxPrice(e.target.value)}
+      />
 
-      <Button
-        className="mt-6"
-        onClick={handleSearch}
-      >
+      <Button onClick={searchProperties}>
         Search
       </Button>
 
     </div>
+
   )
 }
 

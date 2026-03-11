@@ -16,24 +16,38 @@ export const createPayment = createAsyncThunk(
 export const getTenantPayments = createAsyncThunk(
   "tenantPayment/getTenantPayments",
   async (_, { rejectWithValue }) => {
+
     try {
       const res = await api.get("/payments/tenant/me")
       return res.data.data
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch payments")
+      if (error.response?.status === 404) {
+        return []
+      }
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch payments"
+      )
     }
+
   }
 )
 
 export const getPaymentById = createAsyncThunk(
   "tenantPayment/getPaymentById",
   async (paymentId, { rejectWithValue }) => {
+
     try {
       const res = await api.get(`/payments/${paymentId}`)
       return res.data.data
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch payment")
+      if (error.response?.status === 404) {
+        return null
+      }
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch payment"
+      )
     }
+
   }
 )
 

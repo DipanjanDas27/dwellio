@@ -19,7 +19,7 @@ const UpdateProfile = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { user, loading } = useSelector((state) => state.user)
+  const { user, loading } = useSelector((state) => state.auth)
 
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
@@ -32,8 +32,10 @@ const UpdateProfile = () => {
   } = useForm({ mode: "onChange" })
 
   useEffect(() => {
-    dispatch(getCurrentUser())
-  }, [dispatch])
+    if (!user) {
+      dispatch(getCurrentUser())
+    }
+  }, [dispatch, user])
 
   useEffect(() => {
     if (user) {
@@ -68,14 +70,14 @@ const UpdateProfile = () => {
       }
 
       navigate("/profile")
-    } catch {}
+    } catch { }
   }
 
   const handleDeleteAccount = async () => {
     try {
       await dispatch(deleteAccount(user.id)).unwrap()
       navigate("/login")
-    } catch {}
+    } catch { }
   }
 
   if (!user) return <div className="p-6">Loading...</div>

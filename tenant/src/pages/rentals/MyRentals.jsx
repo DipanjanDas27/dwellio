@@ -1,58 +1,57 @@
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
 import { getTenantRentals } from "@/services/tenantRentalThunks.js"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 const MyRentals = () => {
+
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { rentals, loading } = useSelector((state) => state.rental)
+  const { rentals } = useSelector(
+    (state) => state.rental
+  )
 
   useEffect(() => {
     dispatch(getTenantRentals())
   }, [dispatch])
 
-  if (loading) return <div className="p-6">Loading...</div>
+  const rentalList = useMemo(() => rentals || [], [rentals])
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-4">
 
-      <Card>
-        <CardHeader>
-          <CardTitle>My Rentals</CardTitle>
-        </CardHeader>
-      </Card>
+    <div className="grid md:grid-cols-2 gap-4">
 
-      {rentals?.map((rental) => (
-        <Card
-          key={rental.id}
-          className="cursor-pointer"
-          onClick={() => navigate(`/rentals/${rental.id}`)}
-        >
+      {rentalList.map((rental) => (
 
-          <CardContent className="p-4 space-y-2">
+        <Card key={rental.id}>
 
-            <p className="font-semibold">
-              Property: {rental.property_title}
-            </p>
+          <CardContent className="p-4 space-y-3">
+
+            <h3 className="font-semibold">
+              Rental ID: {rental.id}
+            </h3>
 
             <p>Status: {rental.status}</p>
 
-            <p>
-              Rent: ₹{rental.monthly_rent}
-            </p>
+            <p>Monthly Rent: ₹{rental.monthly_rent}</p>
 
-            <p>
-              Start: {rental.start_date}
-            </p>
+            <Button
+              onClick={() =>
+                navigate(`/rentals/${rental.id}`)
+              }
+            >
+              View Details
+            </Button>
 
           </CardContent>
 
         </Card>
+
       ))}
 
     </div>

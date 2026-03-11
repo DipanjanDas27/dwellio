@@ -1,22 +1,32 @@
-import MyRentals from "../pages/rentals/MyRentals.jsx"
-import RentalDetails from "../pages/rentals/RentalDetails.jsx"
-import AuthLayout from "../components/custom/AuthLayout.jsx"
+import { lazy } from "react"
+import AuthLayout from "@/components/custom/AuthLayout.jsx"
+
+const Rentals = lazy(() => import("@/pages/rentals/Rentals"))
+const RentalDetails = lazy(() => import("@/pages/rentals/RentalDetails"))
+const CreateRental = lazy(() => import("@/pages/rentals/CreateRental"))
 
 const rentalRoutes = [
   {
     path: "/rentals",
     element: (
       <AuthLayout authentication={true}>
-        <MyRentals />
+        <Rentals />
       </AuthLayout>
     )
   },
-  
   {
     path: "/rentals/:rentalId",
     element: (
       <AuthLayout authentication={true}>
         <RentalDetails />
+      </AuthLayout>
+    )
+  },
+  {
+    path: "/rentals/create/:propertyId",
+    element: (
+      <AuthLayout authentication={true}>
+        <CreateRental />
       </AuthLayout>
     )
   }

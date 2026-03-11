@@ -18,24 +18,48 @@ export const createRental = createAsyncThunk(
 export const getTenantRentals = createAsyncThunk(
   "tenantRental/getTenantRentals",
   async (_, { rejectWithValue }) => {
+
     try {
+
       const res = await api.get("/rentals/tenant/me")
+
       return res.data.data
+
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch rentals")
+
+      if (error.response?.status === 404) {
+        return []
+      }
+
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch rentals"
+      )
     }
+
   }
 )
 
 export const getRentalById = createAsyncThunk(
   "tenantRental/getRentalById",
   async (rentalId, { rejectWithValue }) => {
+
     try {
+
       const res = await api.get(`/rentals/${rentalId}`)
+
       return res.data.data
+
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch rental")
+
+      if (error.response?.status === 404) {
+        return null
+      }
+
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch rental"
+      )
     }
+
   }
 )
 

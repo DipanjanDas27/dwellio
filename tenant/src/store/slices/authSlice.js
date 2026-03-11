@@ -10,7 +10,7 @@ import {
   resetPassword,
   changePassword
 } from "@/services/authThunks.js"
-
+import { getCurrentUser } from "@/services/userThunks.js"
 const initialState = {
   user: null,
   isAuthenticated: false,
@@ -50,6 +50,17 @@ const authSlice = createSlice({
           state.isAuthenticated = false,
           state.isInitialized = true
       })
+      .addCase(getCurrentUser.fulfilled, (state, action) => {
+        state.user = action.payload,
+          state.isAuthenticated = true,
+          state.isInitialized = true
+      })
+      .addCase(getCurrentUser.rejected, (state, action) => {
+        state.user = null,
+          state.isAuthenticated = false,
+          state.isInitialized = true,
+          state.error = null
+      })
 
     builder
       .addMatcher(
@@ -85,6 +96,7 @@ const authSlice = createSlice({
         (state) => {
           state.loading = false
           state.success = true
+          state.isInitialized = true
         }
       )
       .addMatcher(

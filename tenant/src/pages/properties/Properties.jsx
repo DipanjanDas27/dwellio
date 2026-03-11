@@ -1,70 +1,75 @@
-import { useSelector } from "react-redux"
+import { useEffect, useMemo } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
-import PropertySearch from "@/components/custom/PropertySearch.jsx"
+import { getFilteredProperties } from "@/services/tenantPropertyThunks.js"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import PropertySearch from "@/components/custom/PropertySearch"
+
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 const Properties = () => {
+
+  const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { properties, loading } = useSelector((state) => state.property)
+  const { properties } = useSelector(
+    (state) => state.property
+  )
+
+  useEffect(() => {
+  dispatch(
+    getFilteredProperties({
+      minPrice: 0,
+      maxPrice: 100000
+    })
+  )
+}, [dispatch])
+
+  const propertyList = useMemo(() => properties || [], [properties])
 
   return (
-    <div className="max-w-5xl mx-auto p-4 space-y-6">
 
-      <Card>
+    <div>
 
-        <CardHeader>
-          <CardTitle>Search Properties</CardTitle>
-        </CardHeader>
+      <PropertySearch />
 
-        <CardContent>
-          <PropertySearch />
-        </CardContent>
+      <div className="grid md:grid-cols-3 gap-4">
 
-      </Card>
+        {propertyList.map((property) => (
 
-      {loading && (
-        <div>Loading...</div>
-      )}
+          <Card key={property.id}>
 
-      <div className="grid md:grid-cols-2 gap-4">
+            <CardContent className="p-4 space-y-3">
 
-        {properties?.map((property) => (
-          <Card
-            key={property.id}
-            className="cursor-pointer"
-            onClick={() =>
-              navigate(`/properties/${property.id}`)
-            }
-          >
-
-            <CardContent className="p-4 space-y-2">
-
-              {property.image_url && (
-                <img
-                  src={property.image_url}
-                  alt={property.title}
-                  className="w-full h-40 object-cover rounded"
-                />
-              )}
+              <img
+                src={property.image_url}
+                alt="property"
+                loading="lazy"
+                className="w-full h-40 object-cover rounded"
+              />
 
               <h3 className="font-semibold">
                 {property.title}
               </h3>
 
-              <p className="text-sm text-gray-600">
-                {property.city}
-              </p>
+              <p>{property.city}</p>
 
-              <p className="font-medium">
-                ₹{property.rent_amount}/month
-              </p>
+              <p>₹ {property.rent_amount}</p>
+
+              <Button
+                onClick={() =>
+                  navigate(`/properties/${property.id}`)
+                }
+              >
+                View Details
+              </Button>
 
             </CardContent>
 
           </Card>
+
         ))}
 
       </div>

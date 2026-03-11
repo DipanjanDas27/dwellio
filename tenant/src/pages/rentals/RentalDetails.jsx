@@ -1,24 +1,20 @@
-import { useEffect } from "react"
+import { useEffect, useCallback } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useParams, useNavigate } from "react-router-dom"
 
-import {
-  getRentalById,
-  cancelRental
-} from "@/services/tenantRentalThunks.js"
-
+import { getRentalById } from "@/services/tenantRentalThunks.js"
 import { createPayment } from "@/services/tenantPaymentThunks.js"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
 const RentalDetails = () => {
 
   const { rentalId } = useParams()
+
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { rentalDetails, loading } = useSelector(
+  const { rental } = useSelector(
     (state) => state.rental
   )
 
@@ -26,105 +22,54 @@ const RentalDetails = () => {
     dispatch(getRentalById(rentalId))
   }, [dispatch, rentalId])
 
-  const handleCancel = async () => {
-    await dispatch(cancelRental(rentalId))
-    dispatch(getRentalById(rentalId))
-  }
+  const handlePayment = useCallback(() => {
 
-  const handleRenew = () => {
-
-    navigate(
-      `/rentals/create/${rentalDetails.property_id}`,
-      {
-        state: {
-          isRenew: true,
-          rentalId: rentalDetails.id
-        }
-      }
+    dispatch(
+      createPayment({
+        agreement_id: rental.id,
+        owner_id: rental.owner_id,
+        amount: rental.monthly_rent,
+        idempotency_key: crypto.randomUUID()
+      })
     )
-  }
 
-  const handleMonthlyPayment = async () => {
+  }, [dispatch, rental])
 
-    const paymentData = {
-      agreement_id: rentalDetails.id,
-      owner_id: rentalDetails.owner_id,
-      amount: rentalDetails.monthly_rent,
-      idempotency_key: crypto.randomUUID(),
-      gatewayResponse: {
-        status: "success",
-        transaction_id: crypto.randomUUID()
-      }
-    }
+  const handleRenew = useCallback(() => {
+    navigate(`/rentals/create/${rental.property_id}?renew=${rental.id}`)
+  }, [navigate, rental])
 
-    await dispatch(createPayment(paymentData))
-  }
-
-  if (!rentalDetails || loading)
-    return <div className="p-6">Loading...</div>
+  if (!rental) return <div>Loading...</div>
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
 
-      <Card>
+    <div className="space-y-4">
 
-        <CardHeader>
-          <CardTitle>Rental Details</CardTitle>
-        </CardHeader>
+      <h1 className="text-2xl font-bold">
+        Rental Details
+      </h1>
 
-        <CardContent className="space-y-3">
+      <p>Status: {rental.status}</p>
 
-          <p><strong>Status:</strong> {rentalDetails.status}</p>
+      <p>Monthly Rent: ₹{rental.monthly_rent}</p>
 
-          <p>
-            <strong>Monthly Rent:</strong> ₹{rentalDetails.monthly_rent}
-          </p>
+      <Button onClick={handlePayment}>
+        Pay Monthly Rent
+      </Button>
 
-          <p>
-            <strong>Start Date:</strong> {rentalDetails.start_date}
-          </p>
+      {rental.status === "terminated" && (
 
-          <p>
-            <strong>End Date:</strong> {rentalDetails.end_date}
-          </p>
+        <Button
+          variant="outline"
+          onClick={handleRenew}
+        >
+          Renew Rental
+        </Button>
 
-          <div className="flex flex-wrap gap-3 pt-4">
-
-            {rentalDetails.status === "active" && (
-              <Button onClick={handleMonthlyPayment}>
-                Pay Monthly Rent
-              </Button>
-            )}
-
-            {rentalDetails.status === "pending" && (
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-              >
-                Cancel Rental
-              </Button>
-            )}
-
-            {rentalDetails.status === "terminated" && (
-              <Button onClick={handleRenew}>
-                Renew Rental
-              </Button>
-            )}
-
-            <Button
-              variant="outline"
-              onClick={() => navigate(-1)}
-            >
-              Go Back
-            </Button>
-
-          </div>
-
-        </CardContent>
-
-      </Card>
+      )}
 
     </div>
+
   )
 }
 

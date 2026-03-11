@@ -1,7 +1,9 @@
-import Profile from "../pages/user/Profile.jsx"
-import UpdateProfile from "../pages/user/UpdateProfile.jsx"
-import UserDetails from "../pages/user/UserDetails.jsx"
-import AuthLayout from "../components/custom/AuthLayout.jsx"
+import { lazy } from "react"
+import AuthLayout from "@/components/custom/AuthLayout"
+
+const Profile = lazy(() => import("@/pages/user/Profile"))
+const UpdateProfile = lazy(() => import("@/pages/user/UpdateProfile"))
+const UserDetails = lazy(() => import("@/pages/user/UserDetails"))
 
 const userRoutes = [
   {

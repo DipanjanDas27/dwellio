@@ -1,16 +1,17 @@
-import { StrictMode } from "react"
+import { StrictMode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { RouterProvider } from "react-router-dom"
 import { Provider } from "react-redux"
-
+import store from "@/store/store"
+import { router } from "@/routes/routes"
 import "./index.css"
-import store from "./store/store.js"
-import router from "./routes/router.jsx"
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
-      <RouterProvider router={router} />
+      <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+        <RouterProvider router={router} />
+      </Suspense>
     </Provider>
   </StrictMode>
 )

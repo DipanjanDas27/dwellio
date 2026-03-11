@@ -13,7 +13,13 @@ const SendOtp = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { loading, isAuthenticated } = useSelector((state) => state.auth)
+  const { user, loading, isAuthenticated } = useSelector((state) => state.auth)
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(getCurrentUser())
+    }
+  }, [dispatch, user])
 
   const {
     register,
@@ -30,7 +36,7 @@ const SendOtp = () => {
       }
 
       navigate("/verify-otp")
-    } catch {}
+    } catch { }
   }
 
   return (
@@ -59,17 +65,17 @@ const SendOtp = () => {
                 )}
               </div>
             )}
-            
+
             {isAuthenticated && (
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Mail className="w-4 h-4 text-blue-600" />
-                      <p className="text-sm text-gray-600">OTP will be sent to:</p>
-                    </div>
-                    <p className="font-semibold text-blue-900">{user?.email}</p>
-                  </div>
-                )}
-                
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2 mb-1">
+                  <Mail className="w-4 h-4 text-blue-600" />
+                  <p className="text-sm text-gray-600">OTP will be sent to:</p>
+                </div>
+                <p className="font-semibold text-blue-900">{user?.email}</p>
+              </div>
+            )}
+
             <Button
               type="submit"
               className="w-full"

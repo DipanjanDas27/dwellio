@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
-import { getCurrentUser } from "@/services/userThunks.js"
+import { getCurrentUser } from "@/services/userThunks"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,11 +11,13 @@ const Profile = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { user, loading } = useSelector((state) => state.user)
+  const { user, loading } = useSelector((state) => state.auth)
 
   useEffect(() => {
-    dispatch(getCurrentUser())
-  }, [dispatch])
+    if (!user) {
+      dispatch(getCurrentUser())
+    }
+  }, [dispatch, user])
 
   if (loading) return <div className="p-6">Loading...</div>
 

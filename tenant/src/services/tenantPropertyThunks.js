@@ -8,8 +8,16 @@ export const getFilteredProperties = createAsyncThunk(
       const params = new URLSearchParams(filters).toString()
       const res = await api.get(`/properties?${params}`)
       return res.data.data
+
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch properties")
+
+      if (error.response?.status === 404) {
+        return []
+      }
+
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch properties"
+      )
     }
   }
 )

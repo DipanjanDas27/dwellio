@@ -1,19 +1,18 @@
-import { useEffect } from "react"
+import { useEffect, useCallback } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useParams, useNavigate } from "react-router-dom"
 
-import { getProperty } from "@/services/tenantPropertyThunks"
+import { getProperty } from "@/services/tenantPropertyThunks.js"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
 const PropertyDetails = () => {
-  const { propertyId } = useParams()
 
+  const { propertyId } = useParams()
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { propertyDetails, loading } = useSelector(
+  const { property } = useSelector(
     (state) => state.property
   )
 
@@ -21,60 +20,36 @@ const PropertyDetails = () => {
     dispatch(getProperty(propertyId))
   }, [dispatch, propertyId])
 
-  if (loading || !propertyDetails)
-    return <div className="p-6">Loading...</div>
+  const handleCreateRental = useCallback(() => {
+    navigate(`/rentals/create/${propertyId}`)
+  }, [navigate, propertyId])
+
+  if (!property) return <div>Loading...</div>
 
   return (
-    <div className="max-w-3xl mx-auto p-4">
 
-      <Card>
+    <div className="space-y-4">
 
-        <CardHeader>
-          <CardTitle>{propertyDetails.title}</CardTitle>
-        </CardHeader>
+      <img
+        src={property.image_url}
+        alt="property"
+        loading="lazy"
+        className="w-full max-h-96 object-cover rounded"
+      />
 
-        <CardContent className="space-y-4">
+      <h1 className="text-2xl font-bold">
+        {property.title}
+      </h1>
 
-          {propertyDetails.image_url && (
-            <img
-              src={propertyDetails.image_url}
-              alt={propertyDetails.title}
-              className="w-full h-64 object-cover rounded"
-            />
-          )}
+      <p>{property.description}</p>
 
-          <p>{propertyDetails.description}</p>
+      <p>City: {property.city}</p>
 
-          <p><strong>City:</strong> {propertyDetails.city}</p>
+      <p>Rent: ₹{property.rent_amount}</p>
 
-          <p><strong>BHK:</strong> {propertyDetails.bhk}</p>
-
-          <p><strong>Rent:</strong> ₹{propertyDetails.rent_amount}</p>
-
-          <p><strong>Available Rooms:</strong> {propertyDetails.available_rooms}</p>
-
-          <div className="flex gap-2 pt-4">
-
-            <Button
-              onClick={() =>
-                navigate(`/rentals/create/${propertyDetails.id}`)
-              }
-            >
-              Book Rental
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={() => navigate(-1)}
-            >
-              Go Back
-            </Button>
-
-          </div>
-
-        </CardContent>
-
-      </Card>
+      <Button onClick={handleCreateRental}>
+        Rent This Property
+      </Button>
 
     </div>
   )

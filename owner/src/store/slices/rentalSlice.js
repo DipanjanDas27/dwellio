@@ -17,12 +17,7 @@ const initialState = {
 const rentalSlice = createSlice({
   name: "rental",
   initialState,
-  reducers: {
-    clearRentalState: (state) => {
-      state.error = null
-      state.success = false
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
 
     builder

@@ -18,12 +18,7 @@ const initialState = {
 const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {
-    clearUserState: (state) => {
-      state.error = null
-      state.success = false
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
 
     builder

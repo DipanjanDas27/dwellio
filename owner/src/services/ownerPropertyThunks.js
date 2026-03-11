@@ -25,6 +25,18 @@ export const ownerGetProperties = createAsyncThunk(
   }
 )
 
+export const getProperty = createAsyncThunk(
+  "ownerProperty/getProperty",
+  async (propertyId, { rejectWithValue }) => {
+    try {
+      const res = await api.get(`/properties/${propertyId}`)
+      return res.data.data
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch property")
+    }
+  }
+)
+
 export const ownerUpdateProperty = createAsyncThunk(
   "ownerProperty/updateProperty",
   async ({ propertyId, data }, { rejectWithValue }) => {

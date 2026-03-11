@@ -16,12 +16,7 @@ const initialState = {
 const paymentSlice = createSlice({
   name: "payment",
   initialState,
-  reducers: {
-    clearPaymentState: (state) => {
-      state.error = null
-      state.success = false
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
 
     builder

@@ -2,38 +2,36 @@ import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useParams, useNavigate } from "react-router-dom"
 
-import {
-  getPaymentById,
-  deletePayment
-} from "@/services/tenantPaymentThunks.js"
+import { ownerGetPaymentById } from "@/services/ownerPaymentThunks"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
 const PaymentDetails = () => {
-  const { paymentId } = useParams()
-
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const { paymentId } = useParams()
 
-  const { paymentDetails, loading } = useSelector(
-    (state) => state.payment
-  )
+  const { payment, loading } = useSelector((state) => state.payment)
 
   useEffect(() => {
-    dispatch(getPaymentById(paymentId))
+    dispatch(ownerGetPaymentById(paymentId))
   }, [dispatch, paymentId])
 
-  const handleDelete = async () => {
-    await dispatch(deletePayment(paymentId))
-    navigate("/payments")
+  if (loading || !payment) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        Loading payment details...
+      </div>
+    )
   }
 
-  if (!paymentDetails || loading)
-    return <div className="p-6">Loading...</div>
-
   return (
-    <div className="max-w-xl mx-auto p-4">
+    <div className="p-6 space-y-6">
+
+      <Button variant="outline" onClick={() => navigate(-1)}>
+        Back
+      </Button>
 
       <Card>
 
@@ -41,40 +39,32 @@ const PaymentDetails = () => {
           <CardTitle>Payment Details</CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 text-sm">
 
           <p>
-            <strong>Amount:</strong> ₹{paymentDetails.amount}
+            <span className="font-medium">Transaction ID:</span>{" "}
+            {payment.transaction_id}
           </p>
 
           <p>
-            <strong>Status:</strong> {paymentDetails.payment_status}
+            <span className="font-medium">Amount:</span>{" "}
+            ₹{payment.amount}
           </p>
 
           <p>
-            <strong>Transaction ID:</strong>{" "}
-            {paymentDetails.transaction_id || "Not generated"}
+            <span className="font-medium">Status:</span>{" "}
+            {payment.status}
           </p>
 
-          <div className="flex gap-2 pt-4">
+          <p>
+            <span className="font-medium">Rental ID:</span>{" "}
+            {payment.rental_id}
+          </p>
 
-            {paymentDetails.payment_status === "failed" && (
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-              >
-                Delete Failed Payment
-              </Button>
-            )}
-
-            <Button
-              variant="outline"
-              onClick={() => navigate(-1)}
-            >
-              Go Back
-            </Button>
-
-          </div>
+          <p>
+            <span className="font-medium">Created At:</span>{" "}
+            {new Date(payment.created_at).toLocaleString()}
+          </p>
 
         </CardContent>
 

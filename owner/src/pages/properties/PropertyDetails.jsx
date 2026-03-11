@@ -1,55 +1,69 @@
-import { useEffect, useCallback } from "react"
+import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useParams, useNavigate } from "react-router-dom"
 
-import { getProperty } from "@/services/tenantPropertyThunks.js"
+import { getProperty } from "@/services/propertyThunks"
+import { ownerDeleteProperty } from "@/services/ownerPropertyThunks"
 
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
 const PropertyDetails = () => {
 
-  const { propertyId } = useParams()
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const { propertyId } = useParams()
 
-  const { property } = useSelector(
-    (state) => state.property
-  )
+  const { property } = useSelector((state) => state.property)
 
   useEffect(() => {
     dispatch(getProperty(propertyId))
   }, [dispatch, propertyId])
 
-  const handleCreateRental = useCallback(() => {
-    navigate(`/rentals/create/${propertyId}`)
-  }, [navigate, propertyId])
+  const handleDelete = async () => {
+    await dispatch(ownerDeleteProperty(propertyId))
+    navigate("/owner/properties")
+  }
 
-  if (!property) return <div>Loading...</div>
+  if (!property) return null
 
   return (
+    <div className="p-6 space-y-6">
 
-    <div className="space-y-4">
+      <Card>
 
-      <img
-        src={property.image_url}
-        alt="property"
-        loading="lazy"
-        className="w-full max-h-96 object-cover rounded"
-      />
+        <CardHeader>
+          <CardTitle>{property.title}</CardTitle>
+        </CardHeader>
 
-      <h1 className="text-2xl font-bold">
-        {property.title}
-      </h1>
+        <CardContent className="space-y-3">
 
-      <p>{property.description}</p>
+          <p>{property.address}</p>
+          <p>{property.city}</p>
+          <p>₹{property.rent_amount}</p>
 
-      <p>City: {property.city}</p>
+          <div className="flex gap-3">
 
-      <p>Rent: ₹{property.rent_amount}</p>
+            <Button
+              onClick={() =>
+                navigate(`/owner/properties/${property.id}/update`)
+              }
+            >
+              Update
+            </Button>
 
-      <Button onClick={handleCreateRental}>
-        Rent This Property
-      </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+            >
+              Delete
+            </Button>
+
+          </div>
+
+        </CardContent>
+
+      </Card>
 
     </div>
   )

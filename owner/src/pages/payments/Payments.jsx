@@ -1,45 +1,70 @@
-import { useEffect, useMemo } from "react"
+import { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import { useNavigate } from "react-router-dom"
 
-import { getTenantPayments } from "@/services/tenantPaymentThunks.js"
+import { ownerGetPayments } from "@/services/ownerPaymentThunks"
 
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 const Payments = () => {
-
   const dispatch = useDispatch()
+  const navigate = useNavigate()
 
-  const { payments } = useSelector(
-    (state) => state.payment
-  )
+  const { payments, loading } = useSelector((state) => state.payment)
 
   useEffect(() => {
-    dispatch(getTenantPayments())
+    dispatch(ownerGetPayments())
   }, [dispatch])
 
-  const paymentList = useMemo(() => payments || [], [payments])
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        Loading payments...
+      </div>
+    )
+  }
 
   return (
+    <div className="p-6 space-y-6">
 
-    <div className="grid gap-4">
+      <h1 className="text-2xl font-semibold">Payments</h1>
 
-      {paymentList.map((payment) => (
+      {payments?.length === 0 && (
+        <p className="text-muted-foreground">No payments found</p>
+      )}
 
-        <Card key={payment.id}>
+      <div className="grid gap-4">
 
-          <CardContent className="p-4">
+        {payments?.map((payment) => (
+          <Card key={payment.id}>
 
-            <p>Amount: ₹{payment.amount}</p>
+            <CardHeader>
+              <CardTitle className="text-base">
+                Transaction {payment.transaction_id}
+              </CardTitle>
+            </CardHeader>
 
-            <p>Status: {payment.payment_status}</p>
+            <CardContent className="flex items-center justify-between">
 
-            <p>Transaction: {payment.transaction_id}</p>
+              <div className="space-y-1 text-sm">
+                <p>Amount: ₹{payment.amount}</p>
+                <p>Status: {payment.status}</p>
+              </div>
 
-          </CardContent>
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/payments/${payment.id}`)}
+              >
+                View Details
+              </Button>
 
-        </Card>
+            </CardContent>
 
-      ))}
+          </Card>
+        ))}
+
+      </div>
 
     </div>
   )

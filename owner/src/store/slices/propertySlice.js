@@ -9,6 +9,7 @@ import {
 
 const initialState = {
   properties: [],
+  property: null,
   loading: false,
   error: null,
   success: false
@@ -17,17 +18,15 @@ const initialState = {
 const propertySlice = createSlice({
   name: "property",
   initialState,
-  reducers: {
-    clearPropertyState: (state) => {
-      state.error = null
-      state.success = false
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
 
     builder
       .addCase(ownerGetProperties.fulfilled, (state, action) => {
         state.properties = action.payload
+      })
+      .addCase(getProperty.fulfilled, (state, action) => {
+        state.property = action.payload
       })
       .addCase(ownerCreateProperty.fulfilled, (state, action) => {
         state.properties = [action.payload, ...state.properties]

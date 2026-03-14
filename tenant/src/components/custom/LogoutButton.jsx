@@ -1,12 +1,8 @@
 import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
-
 import { logoutUser } from "../../services/authThunks"
 
-import { Button } from "@/components/ui/button"
-
 const LogoutButton = () => {
-
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
@@ -16,12 +12,18 @@ const LogoutButton = () => {
   }
 
   return (
-    <Button
-      variant="destructive"
+    <button
       onClick={handleLogout}
+      className="
+        w-full text-left
+        font-semibold text-sm text-red-600
+        hover:text-red-800
+        transition-colors duration-150
+        bg-transparent border-none p-0
+      "
     >
       Logout
-    </Button>
+    </button>
   )
 }
 

@@ -1,0 +1,8 @@
+<svg width="120" height="32" viewBox="0 0 120 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <line x1="2" y1="17" x2="15" y2="5" stroke="#2b1b12" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="15" y1="5" x2="28" y2="17" stroke="#2b1b12" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="2" y1="9" x2="11.5" y2="9" stroke="#2b1b12" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M5 17L15 8L25 17V28C25 28.552 24.552 29 24 29H18.5V22H11.5V29H6C5.448 29 5 28.552 5 28V17Z" fill="#2b1b12"/>
+  <rect x="12" y="22.5" width="7" height="6.5" rx="1" fill="#fef7f2"/>
+  <text x="33" y="25" font-family="Montserrat, sans-serif" font-weight="800" font-size="22" fill="#2b1b12" letter-spacing="-0.6">Dwellio</text>
+</svg>

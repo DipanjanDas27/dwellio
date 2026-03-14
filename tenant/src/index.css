@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -5,6 +6,32 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+
+    --color-brown-dark: #2b1b12;
+    --color-brown-mid: #4f3527;
+    --color-brown-light: #543e32;
+    --color-brown-muted: #695346;
+    --color-beige-card: #ddc7bb;
+    --color-beige-input: #fbf5f1;
+    --color-cream-bg: #fef7f2;
+
+    /* Font */
+    --font-montserrat: "Montserrat", sans-serif;
+
+    /* Border radius */
+    --radius-btn: 8px;
+    --radius-card: 18px;
+
+    /* Shadows */
+    --shadow-card: 0 4px 30px rgba(43, 27, 18, 0.12);
+    --shadow-card-md: 0 8px 30px rgba(43, 27, 18, 0.12);
+    --shadow-card-lg: 0 16px 48px rgba(43, 27, 18, 0.20);
+    --shadow-card-hover: 0 20px 56px rgba(43, 27, 18, 0.22);
+
+    /* Spacing */
+    --spacing-page: 104px;
+    --spacing-navbar: 80px;
+    
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -115,10 +142,11 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+
+    body {
+        @apply bg-background text-foreground;
     }
 }

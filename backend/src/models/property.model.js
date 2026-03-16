@@ -7,12 +7,10 @@ export const createPropertiesTable = async () => {
 
       owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
-      property_type VARCHAR(20) NOT NULL CHECK (property_type IN ('house','pg')),
-
       title VARCHAR(150) NOT NULL,
       description TEXT,
 
-      bhk INT CHECK (bhk > 0),
+      bhk INT NOT NULL CHECK (bhk > 0),
       furnishing VARCHAR(20) CHECK (furnishing IN ('unfurnished','semi','fully')),
 
       address TEXT NOT NULL,
@@ -22,9 +20,10 @@ export const createPropertiesTable = async () => {
 
       rent_amount NUMERIC(10,2) NOT NULL CHECK (rent_amount > 0),
       security_deposit NUMERIC(10,2) CHECK (security_deposit >= 0),
+      notice_period_days INT NOT NULL CHECK (notice_period_days >= 0),
 
-      total_rooms INT CHECK (total_rooms >= 0),
-      available_rooms INT CHECK (available_rooms >= 0),
+      total_rooms INT NOT NULL CHECK (total_rooms >= 0),
+      available_rooms INT NOT NULL CHECK (available_rooms >= 0),
 
       image_url TEXT NOT NULL, 
 
@@ -46,10 +45,10 @@ export const createPropertiesTable = async () => {
 export const createProperty = async (data) => {
   const query = `
     INSERT INTO properties (
-      owner_id, property_type, title, description,
+      owner_id, title, description,
       bhk, furnishing,
       address, city, state, pincode,
-      rent_amount, security_deposit,
+      rent_amount, security_deposit,notice_period_days,
       total_rooms, available_rooms,
       image_url, is_available
     )
@@ -66,7 +65,6 @@ export const createProperty = async (data) => {
 
   const values = [
     data.owner_id,
-    data.property_type,
     data.title,
     data.description,
     data.bhk,
@@ -77,6 +75,7 @@ export const createProperty = async (data) => {
     data.pincode,
     data.rent_amount,
     data.security_deposit,
+    data.notice_period_days,
     data.total_rooms,
     data.available_rooms,
     data.image_url,
@@ -129,16 +128,23 @@ export const getPropertiesByFilter = async ({
   return rows
 }
 
-export const getPropertyById = async (id, db = pool, forUpdate = false) => {
+export const getPropertyById = async (propertyId, client = pool, forUpdate = false) => {
   const query = `
-    SELECT *
-    FROM properties
-    WHERE id = $1
+    SELECT
+      p.*,
+      u.full_name  AS owner_name,
+      u.email      AS owner_email,
+      u.phone      AS owner_phone,
+      u.profile_image_url AS owner_avatar
+    FROM properties p
+    JOIN users u ON u.id = p.owner_id
+    WHERE p.id = $1
     ${forUpdate ? "FOR UPDATE" : ""}
-  `;
-  const { rows } = await db.query(query, [id]);
-  return rows[0];
-};
+    LIMIT 1;
+  `
+  const { rows } = await client.query(query, [propertyId])
+  return rows[0]
+}
 
 export const updateProperty = async (id, data) => {
   const query = `
@@ -157,6 +163,8 @@ export const updateProperty = async (id, data) => {
       total_rooms = COALESCE($11, total_rooms),
       available_rooms = COALESCE($12, available_rooms),
       is_available = COALESCE($13, is_available),
+      notice_period_days = COALESCE($14, notice_period_days),
+      
       updated_at = CURRENT_TIMESTAMP
     WHERE id = $14
     RETURNING *;
@@ -174,6 +182,7 @@ export const updateProperty = async (id, data) => {
     data.rent_amount,
     data.security_deposit,
     data.total_rooms,
+    data.notice_period_days,
     data.available_rooms,
     data.is_available,
     id,

@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 
 import {
   getCurrentUserService,
+  getUserDetailsService,
   updateProfileDetailsService,
   updateUserProfileImageService,
   changePasswordService,

@@ -17,6 +17,7 @@ app.use(cookieparser())
 app.use(express.json({ limit: "20kb" }))
 app.use(express.urlencoded({ extended: true, limit: "20kb" }))
 app.use(express.static("public"))
+app.set("trust proxy", 1);
 
 app.use(globalLimiter);
 app.use("/api/v1/auth", authRoutes);

@@ -6,9 +6,12 @@ import {
   deletePayment,
   getPaymentById,
   getPaymentByTransactionId,
+  getPaymentByIdempotencyKey
 } from "../models/payment.model.js";
 
 import { getUserById } from "../models/user.model.js";
+import { getRentalById, updateRentalAfterPayment } from "../models/rental.model.js"
+import { processDummyPayment, processDummyRefund } from "./dummyGateway.service.js"
 import sendMail from "./mail.service.js";
 import { ApiError } from "../utils/apiError.js";
 import { paymentCreatedTemplate, paymentFailedTemplate, paymentSuccessTemplate, refundTemplate, ownerPaymentReceivedTemplate } from "../templates/paymentMail.template.js";
@@ -19,127 +22,115 @@ export const createPaymentService = async ({
   owner_id,
   amount,
   idempotency_key,
-  gatewayResponse,
 }) => {
 
-  const tenant = await getUserById(tenant_id);
-  if (!tenant) throw new ApiError(404, "Tenant not found");
+  const existingPayment = await getPaymentByIdempotencyKey(idempotency_key)
+  if (existingPayment) return existingPayment
 
-  const owner = await getUserById(owner_id);
-  if (!owner) throw new ApiError(404, "Owner not found");
+  const tenant = await getUserById(tenant_id)
+  if (!tenant) throw new ApiError(404, "Tenant not found")
+
+  const owner = await getUserById(owner_id)
+  if (!owner) throw new ApiError(404, "Owner not found")
 
   if (tenant.role !== "tenant")
-    throw new ApiError(403, "Only tenants can make payments");
+    throw new ApiError(403, "Only tenants can make payments")
 
-  const rental = await getRentalById(agreement_id);
-  if (!rental)
-    throw new ApiError(404, "Rental not found");
+  const rental = await getRentalById(agreement_id)
+  if (!rental) throw new ApiError(404, "Rental not found")
 
   if (rental.status === "cancelled")
-    throw new ApiError(400, "Payment not allowed for this rental status");
+    throw new ApiError(400, "Payment not allowed for this rental status")
 
-  let payment;
-  let gatewaySuccess = false;
+  let payment
+  let gatewayResponse
+  let gatewaySuccess = false
+
+  payment = await createPayment({
+    agreement_id,
+    tenant_id,
+    owner_id,
+    amount,
+    payment_status: "pending",
+    idempotency_key,
+  })
+
+  await sendMail({
+    to: tenant.email,
+    subject: "Payment Initiated - Dwellio",
+    html: paymentCreatedTemplate(amount),
+  })
 
   try {
 
-    payment = await createPayment({
-      agreement_id,
-      tenant_id,
-      owner_id,
+    gatewayResponse = await processDummyPayment({
       amount,
-      payment_status: "pending",
-      idempotency_key,
-    });
+      mode: "auto",
+    })
 
-    await sendMail({
-      to: tenant.email,
-      subject: "Payment Initiated - Dwellio",
-      html: paymentCreatedTemplate(amount),
-    });
+    if (!gatewayResponse || gatewayResponse.status !== "success") {
 
-    if (!gatewayResponse) {
-
-      const failed = await updatePaymentStatus(
-        payment.id,
-        "failed",
-        null
-      );
+      const failed = await updatePaymentStatus(payment.id, "failed", null)
 
       await sendMail({
         to: tenant.email,
         subject: "Payment Failed - Dwellio",
         html: paymentFailedTemplate(amount),
-      });
+      })
 
-      return failed;
+      return failed
     }
 
-    if (gatewayResponse.status === "success") {
+    gatewaySuccess = true
 
-      gatewaySuccess = true;
-
-       const result = await updatePaymentStatus(
-        payment.id,
-        "success",
-        gatewayResponse.transaction_id
-      );
-
-      await sendMail({
-        to: tenant.email,
-        subject: "Payment Successful - Dwellio",
-        html: paymentSuccessTemplate(amount),
-      });
-
-      await sendMail({
-        to: owner.email,
-        subject: "Payment Received - Dwellio",
-        html: ownerPaymentReceivedTemplate(
-          tenant.full_name,
-          amount
-        ),
-      });
-
-      return result;
-    }
-
-     const failed = await updatePaymentStatus(
+    const result = await updatePaymentStatus(
       payment.id,
-      "failed",
-      gatewayResponse.transaction_id || null
-    );
+      "success",
+      gatewayResponse.transaction_id
+    )
+
+    await updateRentalAfterPayment(agreement_id)
 
     await sendMail({
       to: tenant.email,
-      subject: "Payment Failed - Dwellio",
-      html: paymentFailedTemplate(amount),
-    });
+      subject: "Payment Successful - Dwellio",
+      html: paymentSuccessTemplate(amount),
+    })
 
-    return failed;
+    await sendMail({
+      to: owner.email,
+      subject: "Payment Received - Dwellio",
+      html: ownerPaymentReceivedTemplate(tenant.full_name, amount),
+    })
+
+    return result
 
   } catch (error) {
 
+    console.error(error)
     if (gatewaySuccess && gatewayResponse?.transaction_id) {
 
       await processDummyRefund({
         transaction_id: gatewayResponse.transaction_id,
-      });
+      })
 
       if (payment?.id) {
-        await updatePaymentStatus(payment.id, "refunded");
+        await updatePaymentStatus(
+          payment.id,
+          "refunded",
+          gatewayResponse.transaction_id
+        )
       }
-
       await sendMail({
         to: tenant.email,
         subject: "Refund Processed - Dwellio",
         html: refundTemplate(amount),
-      });
+      })
     }
 
-    throw error;
+    throw new ApiError(500, "Payment processing failed. Refund initiated if applicable.")
   }
-};
-
+}
 export const getTenantPaymentsService = async (tenantId) => {
   const tenant = await getUserById(tenantId);
   if (!tenant) throw new ApiError(404, "Tenant not found");

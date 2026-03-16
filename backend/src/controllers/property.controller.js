@@ -15,7 +15,6 @@ import {
 export const createProperty = asyncHandler(async (req, res) => {
 
   const {
-    property_type,
     title,
     description,
     bhk,
@@ -25,13 +24,13 @@ export const createProperty = asyncHandler(async (req, res) => {
     state,
     pincode,
     rent_amount,
+    notice_period_days,
     security_deposit,
     total_rooms,
     available_rooms,
   } = req.body;
 
   if (
-    !property_type ||
     !title ||
     !description ||
     !bhk ||
@@ -42,6 +41,7 @@ export const createProperty = asyncHandler(async (req, res) => {
     !pincode ||
     rent_amount === undefined ||
     security_deposit === undefined ||
+    notice_period_days === undefined ||
     total_rooms === undefined ||
     available_rooms === undefined
   ) {
@@ -53,6 +53,9 @@ export const createProperty = asyncHandler(async (req, res) => {
 
   if (Number(security_deposit) < 0)
     throw new ApiError(400, "Security deposit cannot be negative");
+
+  if (Number(notice_period_days) < 0)
+    throw new ApiError(400, "Notice Period cannot be negative");
 
   if (Number(total_rooms) <= 0)
     throw new ApiError(400, "Total rooms must be greater than 0");
@@ -66,7 +69,6 @@ export const createProperty = asyncHandler(async (req, res) => {
   const property = await createPropertyService({
     ownerId: req.user.id,
     propertyData: {
-      property_type,
       title,
       description,
       bhk,
@@ -76,6 +78,7 @@ export const createProperty = asyncHandler(async (req, res) => {
       state,
       pincode,
       rent_amount: Number(rent_amount),
+      notice_period_days: Number(notice_period_days),
       security_deposit: Number(security_deposit),
       total_rooms: Number(total_rooms),
       available_rooms: Number(available_rooms),

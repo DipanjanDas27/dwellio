@@ -16,7 +16,7 @@ export const createRentalTable = async () => {
       monthly_rent NUMERIC(10,2) NOT NULL CHECK (monthly_rent > 0),
       security_paid BOOLEAN DEFAULT FALSE,
 
-      agreement_document_url TEXT NOT NULL,
+      agreement_document_url TEXT ,
 
       status VARCHAR(20) DEFAULT 'pending'
         CHECK (status IN ('pending','active','terminated','cancelled')),
@@ -38,12 +38,13 @@ export const createRental = async (data, db = pool) => {
   const query = `
     INSERT INTO rental_agreements (
       property_id, tenant_id, owner_id,
-      start_date, end_date, monthly_rent,
-      agreement_document_url, status,security_paid
+      start_date, end_date, notice_period,
+      monthly_rent, agreement_document_url,
+      status, security_paid
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
     RETURNING *;
-  `;
+  `
 
   const values = [
     data.property_id,
@@ -51,15 +52,16 @@ export const createRental = async (data, db = pool) => {
     data.owner_id,
     data.start_date,
     data.end_date,
+    data.notice_period ? Number(data.notice_period) : null,
     data.monthly_rent,
-    data.agreement_document_url,
+    data.agreement_document_url ? agreement_document_url : "",
     data.status,
-    data.security_paid
-  ];
+    data.security_paid,
+  ]
 
-  const { rows } = await db.query(query, values);
-  return rows[0];
-};
+  const { rows } = await db.query(query, values)
+  return rows[0]
+}
 
 export const getRentalsByTenant = async (tenantId) => {
   const { rows } = await pool.query(

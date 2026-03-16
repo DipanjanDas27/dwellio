@@ -78,8 +78,11 @@ export const changePasswordService = async ({
   oldPassword,
   newPassword,
 }) => {
-  if (!newPassword)
-    throw new ApiError(400, "New password is required");
+  if (!newPassword || !oldPassword)
+    throw new ApiError(400, "Both old and new passwords are required");
+
+  if (newPassword === oldPassword)
+    throw new ApiError(400, "New password cannot be the same as the old password");
 
   const user = await getUserById(userId);
   if (!user) throw new ApiError(404, "User not found");

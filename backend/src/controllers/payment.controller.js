@@ -18,7 +18,6 @@ export const createPayment = asyncHandler(async (req, res) => {
     owner_id,
     amount,
     idempotency_key,
-    gatewayResponse,
   } = req.body;
 
   if (
@@ -36,7 +35,6 @@ export const createPayment = asyncHandler(async (req, res) => {
     owner_id,
     amount: Number(amount),
     idempotency_key,
-    gatewayResponse,
   });
 
   return res
@@ -85,26 +83,14 @@ export const getOwnerPayments = asyncHandler(async (req, res) => {
 });
 
 export const getPaymentById = asyncHandler(async (req, res) => {
+  const { paymentId } = req.params
+  
+  if (!paymentId) throw new ApiError(400, "Payment id required")
 
-  const { paymentId } = req.params;
+  const payment = await getPaymentByIdService(paymentId, req.user.id)
 
-  if (!paymentId)
-    throw new ApiError(400, "Payment id required");
-
-  const payment = await getPaymentByIdService(
-    paymentId
-  );
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        payment,
-        "Payment fetched successfully"
-      )
-    );
-});
+  return res.status(200).json(new ApiResponse(200, payment, "Payment fetched successfully"))
+})
 
 export const getPaymentByTransactionId = asyncHandler(async (req, res) => {
 

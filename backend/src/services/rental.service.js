@@ -63,11 +63,12 @@ export const createRentalService = async ({
 
   let rental;
   let payment;
+  let lockedProperty;
 
   try {
     await client.query("BEGIN");
 
-    const lockedProperty = await getPropertyById(property_id, client, true);
+     lockedProperty = await getPropertyById(property_id, client, true);
 
     if (lockedProperty.available_rooms <= 0)
       throw new ApiError(400, "No rooms available");
@@ -138,9 +139,9 @@ export const createRentalService = async ({
   }
 
   const gatewayResponse = await processDummyPayment({
-    amount: property.security_deposit,
+    amount: lockedProperty.security_deposit,
     mode: paymentMode,
-  });
+  })
 
   const updateClient = await pool.connect();
 
@@ -200,7 +201,7 @@ export const createRentalService = async ({
 
     await updateClient.query("COMMIT");
 
-   await sendMail({
+    await sendMail({
       to: tenant.email,
       subject: "Payment Successful - Dwellio",
       html: paymentSuccessTemplate(property.security_deposit),
@@ -214,7 +215,7 @@ export const createRentalService = async ({
         property.security_deposit
       ),
     });
- 
+
     await sendMail({
       to: tenant.email,
       subject: "Rental Activated - Dwellio",
@@ -243,7 +244,7 @@ export const createRentalService = async ({
         transaction_id: gatewayResponse.transaction_id,
       });
 
-      await updatePaymentStatus(payment.id, "refunded");
+      await updatePaymentStatus(payment.id, "refunded", gatewayResponse.transaction_id);
 
       await sendMail({
         to: tenant.email,
@@ -282,7 +283,7 @@ export const getOwnerRentalsService = async (ownerId) => {
   return result;
 };
 
-export const getRentalByIdService = async (rentalId) => {
+export const getRentalByIdService = async (rentalId, userId) => {
 
   const rental = await getRentalById(rentalId);
 
@@ -517,96 +518,90 @@ export const renewRentalService = async ({
 }) => {
 
   if (!rentalId || !start_date || !end_date || !idempotency_key)
-    throw new ApiError(400, "Required fields missing");
+    throw new ApiError(400, "Required fields missing")
 
-  const existingPayment = await getPaymentByIdempotencyKey(idempotency_key);
+  const existingPayment = await getPaymentByIdempotencyKey(idempotency_key)
 
   if (existingPayment) {
     return {
       rental_status:
-        existingPayment.payment_status === "success"
-          ? "active"
-          : "pending",
+        existingPayment.payment_status === "success" ? "active" : "pending",
       payment: existingPayment,
-    };
+    }
   }
 
-  const rental = await getRentalById(rentalId);
-  if (!rental)
-    throw new ApiError(404, "Rental not found");
+  const rental = await getRentalById(rentalId)
+  if (!rental) throw new ApiError(404, "Rental not found")
 
   if (rental.status !== "terminated")
-    throw new ApiError(400, "Only terminated rentals can be renewed");
+    throw new ApiError(400, "Only terminated rentals can be renewed")
 
-  const tenant = await getUserById(rental.tenant_id);
-  const owner = await getUserById(rental.owner_id);
-  const property = await getPropertyById(rental.property_id);
+  const tenant      = await getUserById(rental.tenant_id)
+  const owner       = await getUserById(rental.owner_id)
+  const property    = await getPropertyById(rental.property_id)
+  const lockedProperty = await getPropertyById(rental.property_id)
 
-  const client = await pool.connect();
+  if (!property)      throw new ApiError(404, "Property not found")
+  if (!lockedProperty) throw new ApiError(404, "Property not found")
 
-  let payment;
+  const client = await pool.connect()
+  let payment
 
   try {
-    await client.query("BEGIN");
+    await client.query("BEGIN")
 
     payment = await createPayment(
       {
-        agreement_id: rentalId,
-        tenant_id: rental.tenant_id,
-        owner_id: rental.owner_id,
-        amount: property.security_deposit,
+        agreement_id:   rentalId,
+        tenant_id:      rental.tenant_id,
+        owner_id:       rental.owner_id,
+        amount:         lockedProperty.security_deposit,
         payment_status: "pending",
         idempotency_key,
       },
       client
-    );
+    )
 
-    await client.query("COMMIT");
+    await client.query("COMMIT")
 
     await sendMail({
-      to: tenant.email,
+      to:      tenant.email,
       subject: "Payment Initiated - Dwellio",
-      html: paymentCreatedTemplate(property.security_deposit),
-    });
+      html:    paymentCreatedTemplate(lockedProperty.security_deposit),
+    })
 
   } catch (error) {
-    await client.query("ROLLBACK");
-    throw error;
+    await client.query("ROLLBACK")
+    throw error
   } finally {
-    client.release();
+    client.release()
   }
 
   const gatewayResponse = await processDummyPayment({
-    amount: property.security_deposit,
-    mode: paymentMode,
-  });
+    amount: lockedProperty.security_deposit,
+    mode:   paymentMode,
+  })
 
-  const updateClient = await pool.connect();
+  const updateClient = await pool.connect()
 
   try {
-    await updateClient.query("BEGIN");
+    await updateClient.query("BEGIN")
 
     if (!gatewayResponse || gatewayResponse.status !== "success") {
 
-      await updatePaymentStatus(
-        payment.id,
-        "failed",
-        null,
-        updateClient
-      );
-
-      await updateClient.query("COMMIT");
+      await updatePaymentStatus(payment.id, "failed", null, updateClient)
+      await updateClient.query("COMMIT")
 
       await sendMail({
-        to: tenant.email,
+        to:      tenant.email,
         subject: "Payment Failed - Dwellio",
-        html: paymentFailedTemplate(property.security_deposit),
-      });
+        html:    paymentFailedTemplate(lockedProperty.security_deposit),
+      })
 
       return {
-        rental_status: "terminated",
+        rental_status:  "terminated",
         payment_status: "failed",
-      };
+      }
     }
 
     await updatePaymentStatus(
@@ -614,16 +609,16 @@ export const renewRentalService = async ({
       "success",
       gatewayResponse.transaction_id,
       updateClient
-    );
+    )
 
-    const lockedProperty = await getPropertyById(
+    const lockedPropertyForUpdate = await getPropertyById(
       rental.property_id,
       updateClient,
       true
-    );
+    )
 
-    if (lockedProperty.available_rooms <= 0)
-      throw new ApiError(400, "No rooms available");
+    if (lockedPropertyForUpdate.available_rooms <= 0)
+      throw new ApiError(400, "No rooms available")
 
     await renewRentalDatesAndStatus(
       rentalId,
@@ -631,76 +626,66 @@ export const renewRentalService = async ({
       end_date,
       "active",
       updateClient
-    );
+    )
 
-    const updatedRooms = lockedProperty.available_rooms - 1;
+    const updatedRooms = lockedPropertyForUpdate.available_rooms - 1
 
     await updatePropertyAvailability(
-      lockedProperty.id,
+      lockedPropertyForUpdate.id,
       updatedRooms,
       updatedRooms > 0,
       updateClient
-    );
+    )
 
-    await updateClient.query("COMMIT");
+    await updateClient.query("COMMIT")
 
     await sendMail({
-      to: tenant.email,
+      to:      tenant.email,
       subject: "Payment Successful - Dwellio",
-      html: paymentSuccessTemplate(property.security_deposit),
-    });
+      html:    paymentSuccessTemplate(lockedProperty.security_deposit),
+    })
 
     await sendMail({
-      to: owner.email,
+      to:      owner.email,
       subject: "Payment Received - Dwellio",
-      html: ownerPaymentReceivedTemplate(
-        tenant.full_name,
-        property.security_deposit
-      ),
-    });
+      html:    ownerPaymentReceivedTemplate(tenant.full_name, lockedProperty.security_deposit),
+    })
 
     await sendMail({
-      to: tenant.email,
+      to:      tenant.email,
       subject: "Rental Renewed Successfully - Dwellio",
-      html: rentalRenewedTemplate(),
-    });
+      html:    rentalRenewedTemplate(),
+    })
 
     await sendMail({
-      to: owner.email,
+      to:      owner.email,
       subject: "Rental Renewed - Dwellio",
-      html: ownerRentalRenewedTemplate(property.title),
-    });
+      html:    ownerRentalRenewedTemplate(property.title),
+    })
 
     return {
-      rental_status: "active",
+      rental_status:  "active",
       transaction_id: gatewayResponse.transaction_id,
-    };
+    }
 
   } catch (error) {
 
-    await updateClient.query("ROLLBACK");
+    await updateClient.query("ROLLBACK")
 
     if (gatewayResponse?.status === "success") {
-
-      await processDummyRefund({
-        transaction_id: gatewayResponse.transaction_id,
-      });
-
-      await updatePaymentStatus(payment.id, "refunded");
+      await processDummyRefund({ transaction_id: gatewayResponse.transaction_id })
+      await updatePaymentStatus(payment.id, "refunded", gatewayResponse.transaction_id)
 
       await sendMail({
-        to: tenant.email,
+        to:      tenant.email,
         subject: "Refund Processed - Dwellio",
-        html: refundTemplate(property.security_deposit),
-      });
+        html:    refundTemplate(lockedProperty.security_deposit),
+      })
     }
 
-    throw new ApiError(
-      500,
-      "Rental renewal failed. Refund initiated."
-    );
+    throw new ApiError(500, "Rental renewal failed. Refund initiated.")
 
   } finally {
-    updateClient.release();
+    updateClient.release()
   }
-};
+}

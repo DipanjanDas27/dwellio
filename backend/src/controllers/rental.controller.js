@@ -37,30 +37,30 @@ export const createRental = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Required fields missing");
   }
 
-  const rental = await createRentalService({
-    property_id: propertyId,
-    tenant_id: req.user.id,
-    start_date,
-    end_date,
-    notice_period,
-    monthly_rent: Number(monthly_rent),
-    file: req.file,
-    idempotency_key,
-    paymentMode,
-  });
+  console.log("createRental hit")
+  console.log("body:", req.body)
+  console.log("file:", req.file)
+  console.log("user:", req.user?.id)
+  console.log("propertyId:", propertyId)
 
-  if (!rental) {
-    throw new ApiError(500, "Failed to create rental");
+  try {
+    const rental = await createRentalService({
+      property_id: propertyId,
+      tenant_id: req.user.id,
+      start_date,
+      end_date,
+      notice_period,
+      monthly_rent: Number(monthly_rent),
+      file: req.file,
+      idempotency_key,
+      paymentMode,
+    })
+    return res.status(201).json(new ApiResponse(201, rental, "Rental processed successfully"))
+  } catch (error) {
+    console.error("SERVICE ERROR:", error.message)
+    console.error("STACK:", error.stack)
+    throw error
   }
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(
-        201,
-        rental,
-        "Rental processed successfully"
-      )
-    );
 });
 
 export const getTenantRentals = asyncHandler(async (req, res) => {
@@ -105,7 +105,7 @@ export const getRentalById = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Rental id required");
 
   const rental = await getRentalByIdService(
-    rentalId
+    rentalId, req.user.id
   );
 
   return res

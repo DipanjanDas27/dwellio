@@ -7,9 +7,10 @@ import {
   deletePayment
 } from "@/services/tenantPaymentThunks.js"
 
+
 const initialState = {
   payments: [],
-  payment: null,
+  paymentDetails: null,
   loading: false,
   error: null
 }
@@ -25,10 +26,10 @@ const paymentSlice = createSlice({
         state.payments = action.payload
       })
       .addCase(getPaymentById.fulfilled, (state, action) => {
-        state.payment = action.payload
+        state.paymentDetails = action.payload
       })
       .addCase(getPaymentByTransactionId.fulfilled, (state, action) => {
-        state.payment = action.payload
+        state.paymentDetails = action.payload
       })
       .addCase(createPayment.fulfilled, (state, action) => {
         state.payments.push(action.payload)

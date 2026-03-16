@@ -28,7 +28,7 @@ const authSlice = createSlice({
       state.error = null
       state.success = false
       state.isAuthenticated = false
-      state.isInitialized = false
+      state.isInitialized = true
       state.user = null
     }
   },

@@ -5,7 +5,6 @@ import { motion } from "motion/react"
 import { User, Mail, Phone, ArrowLeft, UserCircle2 } from "lucide-react"
 
 import { getUserDetails } from "@/services/userThunks.js"
-import { Button } from "@/components/ui/button"
 
 const DetailRow = ({ icon, label, value }) => (
   <div className="flex items-center justify-between gap-4 py-3.5 border-b border-beige-card/60 last:border-0">
@@ -105,20 +104,6 @@ const UserDetails = () => {
               value={userDetails.phone || "Not provided"}
             />
           </div>
-
-          <div className="px-6 pb-6 pt-3">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-              <Button
-                variant="outline"
-                onClick={() => navigate(-1)}
-                className="w-full h-12 border-beige-card text-brown-dark font-semibold text-sm rounded-btn hover:bg-beige-input transition-colors duration-150 flex items-center justify-center gap-2"
-              >
-                <ArrowLeft size={15} />
-                Go Back
-              </Button>
-            </motion.div>
-          </div>
-
         </div>
       </motion.div>
     </div>

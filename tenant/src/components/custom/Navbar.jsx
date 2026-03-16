@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useNavigate , useLocation } from "react-router-dom"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { User, ChevronDown, Mail, Phone } from "lucide-react"
@@ -8,6 +8,7 @@ import logo from "/logo.svg"
 
 const Navbar = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { isAuthenticated } = useSelector((state) => state.auth)
 
   const [open, setOpen] = useState(false)
@@ -16,6 +17,11 @@ const Navbar = () => {
 
   const dropRef = useRef(null)
   const contactRef = useRef(null)
+
+  useEffect(() => {
+    setOpen(false)
+    setContactOpen(false)
+  }, [location.pathname])
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)

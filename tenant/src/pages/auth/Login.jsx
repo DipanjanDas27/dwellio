@@ -1,6 +1,7 @@
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useDispatch, useSelector } from "react-redux"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { motion } from "motion/react"
 import { Mail, Lock, LogIn } from "lucide-react"
 
@@ -14,20 +15,17 @@ import logo from "/logo.svg"
 const Login = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const location = useLocation()
   const { loading, error } = useSelector((state) => state.auth)
 
-  const { register, handleSubmit, formState: { errors, isValid } } = useForm({ mode: "onChange" })
-
   useEffect(() => {
-    setOpen(false)
-    setContactOpen(false)
-  }, [location.pathname])
+    dispatch(clearAuthState())
+  }, [dispatch])
+
+  const { register, handleSubmit, formState: { errors, isValid } } = useForm({ mode: "onChange" })
 
   const onSubmit = async (data) => {
     try {
       await dispatch(loginUser(data)).unwrap()
-      dispatch(clearAuthState())
       navigate("/")
     } catch { }
   }

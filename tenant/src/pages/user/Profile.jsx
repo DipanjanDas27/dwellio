@@ -25,7 +25,7 @@ const Profile = () => {
   const { user, loading } = useSelector((state) => state.auth)
 
   useEffect(() => {
-    if (!user) dispatch(getCurrentUser())
+     dispatch(getCurrentUser())
   }, [dispatch, user])
 
   if (loading) return (

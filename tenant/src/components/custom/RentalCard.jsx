@@ -4,10 +4,10 @@ import { Home, IndianRupee, CheckCircle2, Clock, XCircle, ArrowRight, MapPin } f
 import { Button } from "@/components/ui/button"
 
 const STATUS_CONFIG = {
-  active:     { icon: <CheckCircle2 size={13} />, classes: "bg-green-50 text-green-700 border border-green-200"  },
-  pending:    { icon: <Clock size={13} />,         classes: "bg-amber-50 text-amber-700 border border-amber-200"  },
-  cancelled:    { icon: <XCircle size={13} />,        classes: "bg-red-50 text-red-700 border border-red-200"       },
-  terminated: { icon: <XCircle size={13} />,        classes: "bg-red-50 text-red-700 border border-red-200"       },
+  active: { icon: <CheckCircle2 size={13} />, classes: "bg-green-50 text-green-700 border border-green-200" },
+  pending: { icon: <Clock size={13} />, classes: "bg-amber-50 text-amber-700 border border-amber-200" },
+  cancelled: { icon: <XCircle size={13} />, classes: "bg-red-50 text-red-700 border border-red-200" },
+  terminated: { icon: <XCircle size={13} />, classes: "bg-red-50 text-red-700 border border-red-200" },
 }
 
 const getStatus = (status) =>
@@ -18,7 +18,6 @@ const getStatus = (status) =>
 
 const RentalCard = ({ rental, onView }) => {
   const { icon, classes } = getStatus(rental.status)
-
   return (
     <motion.div
       className="bg-white rounded-card border border-beige-card shadow-card font-montserrat overflow-hidden"
@@ -31,7 +30,9 @@ const RentalCard = ({ rental, onView }) => {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-brown-muted leading-none mb-1">Rental</p>
-          <p className="text-sm font-bold text-brown-dark truncate">#{rental.id.slice(0, 8)}</p>
+          <p className="text-sm font-bold text-brown-dark truncate">
+            #{(rental.id ?? "").slice(0, 8)}
+          </p>
         </div>
         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize shrink-0 ${classes}`}>
           {icon}

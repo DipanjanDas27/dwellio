@@ -4,10 +4,10 @@ import { CreditCard, CheckCircle2, Clock, XCircle, ArrowRight } from "lucide-rea
 import { Button } from "@/components/ui/button"
 
 const STATUS_CONFIG = {
-  refunded: { icon: <CheckCircle2 size={13} />, classes: "bg-green-50 text-green-700 border border-green-200" },
+  refunded:  { icon: <CheckCircle2 size={13} />, classes: "bg-blue-50 text-blue-700 border border-blue-200"   },
   success:   { icon: <CheckCircle2 size={13} />, classes: "bg-green-50 text-green-700 border border-green-200" },
-  pending:   { icon: <Clock size={13} />,         classes: "bg-amber-50 text-amber-700 border border-amber-200"  },
-  failed:    { icon: <XCircle size={13} />,        classes: "bg-red-50 text-red-700 border border-red-200"       },
+  pending:   { icon: <Clock size={13} />,         classes: "bg-amber-50 text-amber-700 border border-amber-200" },
+  failed:    { icon: <XCircle size={13} />,        classes: "bg-red-50 text-red-700 border border-red-200"      },
 }
 
 const getStatus = (status) =>
@@ -17,7 +17,7 @@ const getStatus = (status) =>
   }
 
 const PaymentCard = ({ payment, onView }) => {
-  const { icon, classes } = getStatus(payment.status)
+  const { icon, classes } = getStatus(payment.payment_status)
 
   return (
     <motion.div
@@ -31,22 +31,22 @@ const PaymentCard = ({ payment, onView }) => {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-brown-muted leading-none mb-1">Transaction ID</p>
-          <p className="text-sm font-bold text-brown-dark truncate">{payment.transaction_id}</p>
+          <p className="text-sm font-bold text-brown-dark truncate">
+            {payment.transaction_id || "Not generated"}
+          </p>
+        </div>
+        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize shrink-0 ${classes}`}>
+          {icon}
+          {payment.payment_status}
         </div>
       </div>
 
       <div className="px-5 py-4 flex items-center justify-between gap-4">
-        <div className="space-y-3">
-          <div>
-            <p className="text-xs font-semibold text-brown-muted leading-none mb-1">Amount</p>
-            <p className="text-xl font-extrabold text-brown-dark leading-none">
-              ₹{Number(payment.amount).toLocaleString("en-IN")}
-            </p>
-          </div>
-          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize ${classes}`}>
-            {icon}
-            {payment.status}
-          </div>
+        <div>
+          <p className="text-xs font-semibold text-brown-muted leading-none mb-1">Amount</p>
+          <p className="text-xl font-extrabold text-brown-dark leading-none">
+            ₹{Number(payment.amount).toLocaleString("en-IN")}
+          </p>
         </div>
 
         <Button

@@ -16,12 +16,12 @@ const UpdateProfile = () => {
   const navigate = useNavigate()
 
   const { user } = useSelector((state) => state.auth)
-  const { loading } = useSelector((state) => state.user)
-  
-  const [file, setFile] = useState(null)
+  const { loading, error } = useSelector((state) => state.user)
+
+  const [file,    setFile]    = useState(null)
   const [preview, setPreview] = useState(null)
 
-  const { register, handleSubmit, reset, formState: { isValid } } = useForm({ mode: "onChange" })
+  const { register, handleSubmit, reset, formState: { isValid, errors } } = useForm({ mode: "onChange" })
 
   useEffect(() => {
     if (!user) dispatch(getCurrentUser())
@@ -52,14 +52,14 @@ const UpdateProfile = () => {
         await dispatch(updateProfileImage(formData)).unwrap()
       }
       navigate("/profile")
-    } catch { }
+    } catch {}
   }
 
   const handleDeleteAccount = async () => {
     try {
       await dispatch(deleteAccount(user.id)).unwrap()
       navigate("/login")
-    } catch { }
+    } catch {}
   }
 
   if (!user) {
@@ -87,14 +87,6 @@ const UpdateProfile = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.22, 0.68, 0, 1.1] }}
       >
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-sm font-bold text-brown-muted hover:text-brown-dark transition-colors duration-150 mb-6"
-        >
-          <ArrowLeft size={16} />
-          Back to Profile
-        </button>
-
         <div className="bg-white rounded-card shadow-card-md overflow-hidden">
 
           <div className="bg-beige-card px-8 py-6 flex items-center gap-4">
@@ -133,12 +125,23 @@ const UpdateProfile = () => {
                     <User size={32} className="text-brown-muted" />
                   </div>
                 )}
-                <label className="absolute -bottom-1 -right-1 size-8 rounded-full bg-brown-dark flex items-center justify-center cursor-pointer shadow-card hover:bg-[#1a0f09] transition-colors duration-150">
+                <label
+                  htmlFor="profile-image-upload"
+                  className="absolute -bottom-1 -right-1 size-8 rounded-full bg-brown-dark flex items-center justify-center cursor-pointer shadow-card hover:bg-[#1a0f09] transition-colors duration-150"
+                >
                   <ImagePlus size={14} className="text-white" />
-                  <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                 </label>
+                <input
+                  id="profile-image-upload"
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
               </div>
-              <p className="text-xs font-semibold text-brown-muted">Click the icon to change photo</p>
+              <p className="text-xs font-semibold text-brown-muted">
+                {file ? file.name : "Click the icon to change photo"}
+              </p>
             </motion.div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -150,9 +153,12 @@ const UpdateProfile = () => {
                   <Input
                     placeholder="Your full name"
                     className="pl-10 h-12 bg-beige-input border-beige-card rounded-btn text-brown-dark font-semibold placeholder:text-brown-muted/60 focus-visible:ring-brown-dark/30 focus-visible:border-brown-dark"
-                    {...register("full_name", { required: true })}
+                    {...register("full_name", { required: "Name is required" })}
                   />
                 </div>
+                {errors.full_name && (
+                  <p className="text-xs font-semibold text-red-500">{errors.full_name.message}</p>
+                )}
               </motion.div>
 
               <motion.div className="space-y-1.5" {...fieldAnim(0.29)}>
@@ -163,9 +169,12 @@ const UpdateProfile = () => {
                     type="email"
                     placeholder="you@example.com"
                     className="pl-10 h-12 bg-beige-input border-beige-card rounded-btn text-brown-dark font-semibold placeholder:text-brown-muted/60 focus-visible:ring-brown-dark/30 focus-visible:border-brown-dark"
-                    {...register("email", { required: true })}
+                    {...register("email", { required: "Email is required" })}
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-xs font-semibold text-red-500">{errors.email.message}</p>
+                )}
               </motion.div>
 
               <motion.div className="space-y-1.5" {...fieldAnim(0.36)}>
@@ -175,10 +184,23 @@ const UpdateProfile = () => {
                   <Input
                     placeholder="+91 98765 43210"
                     className="pl-10 h-12 bg-beige-input border-beige-card rounded-btn text-brown-dark font-semibold placeholder:text-brown-muted/60 focus-visible:ring-brown-dark/30 focus-visible:border-brown-dark"
-                    {...register("phone", { required: true })}
+                    {...register("phone", { required: "Phone is required" })}
                   />
                 </div>
+                {errors.phone && (
+                  <p className="text-xs font-semibold text-red-500">{errors.phone.message}</p>
+                )}
               </motion.div>
+
+              {error && (
+                <motion.p
+                  className="text-xs font-semibold text-red-500 text-center bg-red-50 border border-red-200 rounded-btn py-2.5 px-4"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                >
+                  {error}
+                </motion.p>
+              )}
 
               <motion.div
                 className="pt-2"

@@ -17,7 +17,11 @@ const initialState = {
 const rentalSlice = createSlice({
   name: "rental",
   initialState,
-  reducers: {},
+  reducers: {
+    clearRental: (state) => {
+      state.rental = null
+    }
+  },
   extraReducers: (builder) => {
 
     builder
@@ -72,5 +76,5 @@ const rentalSlice = createSlice({
       )
   }
 })
-
+export const { clearRental } = rentalSlice.actions
 export default rentalSlice.reducer

@@ -1,8 +1,8 @@
-import { useEffect, useCallback } from "react"
+import { useEffect, useCallback, useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { useParams, useNavigate } from "react-router-dom"
 import { motion } from "motion/react"
-import { Home, IndianRupee, User, CheckCircle2, Clock, XCircle, ArrowLeft, CreditCard, RefreshCw } from "lucide-react"
+import { Home, IndianRupee, User, CheckCircle2, Clock, XCircle, ArrowLeft, CreditCard, RefreshCw, CalendarDays, FileText, AlertCircle } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 
 import { getRentalById } from "@/services/tenantRentalThunks.js"
@@ -10,10 +10,10 @@ import { createPayment } from "@/services/tenantPaymentThunks.js"
 import { Button } from "@/components/ui/button"
 
 const STATUS_CONFIG = {
-  active: { icon: <CheckCircle2 size={14} />, classes: "bg-green-50 text-green-700 border border-green-200" },
-  pending: { icon: <Clock size={14} />, classes: "bg-amber-50 text-amber-700 border border-amber-200" },
-  expired: { icon: <XCircle size={14} />, classes: "bg-red-50 text-red-700 border border-red-200" },
-  terminated: { icon: <XCircle size={14} />, classes: "bg-red-50 text-red-700 border border-red-200" },
+  active:     { icon: <CheckCircle2 size={14} />, classes: "bg-green-50 text-green-700 border border-green-200"  },
+  pending:    { icon: <Clock size={14} />,         classes: "bg-amber-50 text-amber-700 border border-amber-200"  },
+  expired:    { icon: <XCircle size={14} />,        classes: "bg-red-50 text-red-700 border border-red-200"       },
+  terminated: { icon: <XCircle size={14} />,        classes: "bg-red-50 text-red-700 border border-red-200"       },
 }
 
 const getStatus = (status) =>
@@ -32,24 +32,34 @@ const DetailRow = ({ label, value, icon }) => (
   </div>
 )
 
+const formatDate = (ts) =>
+  ts ? new Date(ts).toLocaleDateString("en-IN", {
+    day: "2-digit", month: "short", year: "numeric",
+  }) : "—"
+
 const RentalDetails = () => {
   const { rentalId } = useParams()
   const dispatch = useDispatch()
   const navigate = useNavigate()
+
   const { rental } = useSelector((state) => state.rental)
+  const { loading: paymentLoading } = useSelector((state) => state.payment)
 
   useEffect(() => {
     dispatch(getRentalById(rentalId))
   }, [dispatch, rentalId])
 
-  const handlePayment = useCallback(() => {
-    dispatch(createPayment({
-      agreement_id: rental.id,
-      owner_id: rental.owner_id,
-      amount: rental.monthly_rent,
-      idempotency_key: crypto.randomUUID(),
+  const paymentIdempotencyKey = useMemo(() => crypto.randomUUID(), [rental?.id])
+
+  const handlePayment = useCallback(async () => {
+    await dispatch(createPayment({
+      agreement_id:    rental.id,
+      owner_id:        rental.owner_id,
+      amount:          rental.monthly_rent,
+      idempotency_key: paymentIdempotencyKey,
     }))
-  }, [dispatch, rental])
+    navigate("/payments")
+  }, [dispatch, rental, paymentIdempotencyKey, navigate])
 
   const handleRenew = useCallback(() => {
     navigate(`/rentals/create/${rental.property_id}?renew=${rental.id}`)
@@ -71,7 +81,7 @@ const RentalDetails = () => {
             <Skeleton className="h-6 w-16 rounded-full bg-white/60" />
           </div>
           <div className="px-6 py-2 space-y-1">
-            {[...Array(2)].map((_, i) => (
+            {[...Array(6)].map((_, i) => (
               <div key={i} className="flex justify-between py-3.5 border-b border-beige-card/60">
                 <Skeleton className="h-4 w-28 rounded-btn bg-beige-card" />
                 <Skeleton className="h-4 w-32 rounded-btn bg-beige-card" />
@@ -86,6 +96,7 @@ const RentalDetails = () => {
       </div>
     </div>
   )
+
   const { icon, classes } = getStatus(rental.status)
 
   return (
@@ -133,16 +144,68 @@ const RentalDetails = () => {
               value={rental.status}
               icon={<CheckCircle2 size={14} />}
             />
+            <DetailRow
+              label="Start Date"
+              value={formatDate(rental.start_date)}
+              icon={<CalendarDays size={14} />}
+            />
+            <DetailRow
+              label="End Date"
+              value={formatDate(rental.end_date)}
+              icon={<CalendarDays size={14} />}
+            />
+            <DetailRow
+              label="Notice Period"
+              value={rental.notice_period ? `${rental.notice_period} days` : "—"}
+              icon={<AlertCircle size={14} />}
+            />
+            <DetailRow
+              label="Security Paid"
+              value={rental.security_paid ? "Yes" : "No"}
+              icon={<CheckCircle2 size={14} />}
+            />
+            {rental.agreement_document_url && (
+              <div className="flex items-center justify-between gap-4 py-3.5 border-b border-beige-card/60">
+                <div className="flex items-center gap-2 text-sm font-semibold text-brown-muted shrink-0">
+                  <FileText size={14} />
+                  Agreement
+                </div>
+                <a
+                  href={rental.agreement_document_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-bold text-brown-dark hover:underline"
+                >
+                  View Document
+                </a>
+              </div>
+            )}
+            <DetailRow
+              label="Created At"
+              value={formatDate(rental.created_at)}
+              icon={<CalendarDays size={14} />}
+            />
           </div>
 
           <div className="px-6 pb-6 pt-3 flex flex-col gap-3">
+
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
               <Button
                 onClick={handlePayment}
+                disabled={paymentLoading}
                 className="w-full h-12 bg-brown-dark hover:bg-[#1a0f09] text-white font-semibold text-sm rounded-btn transition-colors duration-150 flex items-center justify-center gap-2"
               >
-                <CreditCard size={16} />
-                Pay Monthly Rent
+                {paymentLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    Processing...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <CreditCard size={16} />
+                    {rental.status === "pending" ? "Retry Payment" : "Pay Monthly Rent"}
+                  </span>
+                )}
               </Button>
             </motion.div>
 
@@ -175,8 +238,8 @@ const RentalDetails = () => {
                 </Button>
               </motion.div>
             )}
-          </div>
 
+          </div>
         </div>
       </motion.div>
     </div>

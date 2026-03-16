@@ -1,8 +1,9 @@
 import { useForm } from "react-hook-form"
-import { useDispatch } from "react-redux"
+import { useMemo } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import { useParams, useNavigate, useLocation } from "react-router-dom"
 import { motion } from "motion/react"
-import { CalendarDays, IndianRupee, FileText, Clock, ArrowLeft, FilePlus, RefreshCw } from "lucide-react"
+import { CalendarDays, IndianRupee, FileText, Clock, ArrowLeft, FilePlus, RefreshCw, Lock } from "lucide-react"
 
 import { createRental, renewRental } from "@/services/tenantRentalThunks.js"
 import { Input } from "@/components/ui/input"
@@ -15,19 +16,31 @@ const CreateRental = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const dispatch = useDispatch()
-
+  
   const params = new URLSearchParams(location.search)
   const rentalId = params.get("renew")
   const isRenew = Boolean(rentalId)
+  
+  const { security_deposit, notice_period } = location.state || {}
+  
+  const { loading, error } = useSelector((state) => state.rental)
+  
+  const idempotencyKey = useMemo(() => crypto.randomUUID(), [])
 
-  const { register, handleSubmit, formState: { isValid } } = useForm({ mode: "onChange" })
+  const { register, handleSubmit, formState: { isValid, errors } } = useForm({
+    mode: "onChange",
+    defaultValues: {
+      notice_period: notice_period ?? "",
+      monthly_rent: security_deposit ?? "",
+    }
+  })
 
   const onSubmit = async (data) => {
     if (isRenew) {
       const renewData = {
         start_date: data.start_date,
         end_date: data.end_date,
-        idempotency_key: crypto.randomUUID(),
+        idempotency_key: idempotencyKey,
         paymentMode: "auto",
       }
       await dispatch(renewRental({ rentalId, data: renewData }))
@@ -38,7 +51,7 @@ const CreateRental = () => {
       formData.append("notice_period", data.notice_period)
       formData.append("monthly_rent", data.monthly_rent)
       formData.append("paymentMode", "auto")
-      formData.append("idempotency_key", crypto.randomUUID())
+      formData.append("idempotency_key", idempotencyKey)
       if (data.agreement) formData.append("agreement", data.agreement[0])
       await dispatch(createRental({ propertyId, formData }))
     }
@@ -92,8 +105,11 @@ const CreateRental = () => {
                 <Input
                   type="date"
                   className="h-12 bg-beige-input border-beige-card rounded-btn text-brown-dark font-semibold focus-visible:ring-brown-dark/30 focus-visible:border-brown-dark"
-                  {...register("start_date", { required: true })}
+                  {...register("start_date", { required: "Start date is required" })}
                 />
+                {errors.start_date && (
+                  <p className="text-xs font-semibold text-red-500">{errors.start_date.message}</p>
+                )}
               </motion.div>
 
               <motion.div className="space-y-1.5" {...fieldAnim(0.22)}>
@@ -104,8 +120,11 @@ const CreateRental = () => {
                 <Input
                   type="date"
                   className="h-12 bg-beige-input border-beige-card rounded-btn text-brown-dark font-semibold focus-visible:ring-brown-dark/30 focus-visible:border-brown-dark"
-                  {...register("end_date", { required: true })}
+                  {...register("end_date", { required: "End date is required" })}
                 />
+                {errors.end_date && (
+                  <p className="text-xs font-semibold text-red-500">{errors.end_date.message}</p>
+                )}
               </motion.div>
 
               {!isRenew && (
@@ -114,11 +133,12 @@ const CreateRental = () => {
                     <Label className="text-sm font-bold text-brown-dark flex items-center gap-1.5">
                       <Clock size={14} className="text-brown-muted" />
                       Notice Period (days)
+                      <Lock size={12} className="text-brown-muted ml-auto" />
                     </Label>
                     <Input
                       type="number"
-                      placeholder="e.g. 30"
-                      className="h-12 bg-beige-input border-beige-card rounded-btn text-brown-dark font-semibold placeholder:text-brown-muted/60 focus-visible:ring-brown-dark/30 focus-visible:border-brown-dark"
+                      readOnly
+                      className="h-12 bg-beige-card border-beige-card rounded-btn text-brown-dark font-semibold cursor-not-allowed opacity-75 focus-visible:ring-0"
                       {...register("notice_period")}
                     />
                   </motion.div>
@@ -126,17 +146,21 @@ const CreateRental = () => {
                   <motion.div className="space-y-1.5" {...fieldAnim(0.36)}>
                     <Label className="text-sm font-bold text-brown-dark flex items-center gap-1.5">
                       <IndianRupee size={14} className="text-brown-muted" />
-                      Monthly Rent
+                      Security Deposit
+                      <Lock size={12} className="text-brown-muted ml-auto" />
                     </Label>
                     <div className="relative">
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-brown-muted">₹</span>
                       <Input
                         type="number"
-                        placeholder="e.g. 25000"
-                        className="pl-8 h-12 bg-beige-input border-beige-card rounded-btn text-brown-dark font-semibold placeholder:text-brown-muted/60 focus-visible:ring-brown-dark/30 focus-visible:border-brown-dark"
-                        {...register("monthly_rent", { required: true })}
+                        readOnly
+                        className="pl-8 h-12 bg-beige-card border-beige-card rounded-btn text-brown-dark font-semibold cursor-not-allowed opacity-75 focus-visible:ring-0"
+                        {...register("monthly_rent", { required: "Monthly rent is required" })}
                       />
                     </div>
+                    {errors.monthly_rent && (
+                      <p className="text-xs font-semibold text-red-500">{errors.monthly_rent.message}</p>
+                    )}
                   </motion.div>
 
                   <motion.div className="space-y-1.5" {...fieldAnim(0.43)}>
@@ -157,6 +181,16 @@ const CreateRental = () => {
                 </>
               )}
 
+              {error && (
+                <motion.p
+                  className="text-xs font-semibold text-red-500 text-center bg-red-50 border border-red-200 rounded-btn py-2.5 px-4"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                >
+                  {error}
+                </motion.p>
+              )}
+
               <motion.div
                 className="space-y-3 pt-2"
                 initial={{ opacity: 0, y: 16 }}
@@ -165,11 +199,20 @@ const CreateRental = () => {
               >
                 <Button
                   type="submit"
-                  disabled={!isValid}
+                  disabled={!isValid || loading}
                   className="w-full h-12 bg-brown-dark hover:bg-[#1a0f09] text-white font-semibold text-base rounded-btn transition-colors duration-150 flex items-center justify-center gap-2"
                 >
-                  {isRenew ? <RefreshCw size={16} /> : <FilePlus size={16} />}
-                  {isRenew ? "Renew Rental" : "Create Rental"}
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                      {isRenew ? "Renewing..." : "Creating..."}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      {isRenew ? <RefreshCw size={16} /> : <FilePlus size={16} />}
+                      {isRenew ? "Renew Rental" : "Create Rental"}
+                    </span>
+                   )} 
                 </Button>
 
                 <Button

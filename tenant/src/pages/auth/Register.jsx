@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
@@ -22,6 +22,10 @@ const Register = () => {
 
   const { register, handleSubmit, formState: { errors, isValid } } = useForm({ mode: "onChange" })
 
+  useEffect(() => {
+    dispatch(clearAuthState())
+  }, [dispatch])
+  
   const handleFileChange = (e) => {
     const selected = e.target.files?.[0]
     if (selected) setFile(selected)

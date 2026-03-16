@@ -15,6 +15,14 @@ const rentalRoutes = [
     )
   },
   {
+    path: "/rentals/create/:propertyId",
+    element: (
+      <AuthLayout authentication={true}>
+        <CreateRental />
+      </AuthLayout>
+    )
+  },
+  {
     path: "/rentals/:rentalId",
     element: (
       <AuthLayout authentication={true}>
@@ -22,14 +30,6 @@ const rentalRoutes = [
       </AuthLayout>
     )
   },
-  {
-    path: "/rentals/create/:propertyId",
-    element: (
-      <AuthLayout authentication={true}>
-        <CreateRental />
-      </AuthLayout>
-    )
-  }
 ]
 
 export default rentalRoutes

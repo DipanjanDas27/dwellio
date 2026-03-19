@@ -9,15 +9,15 @@ import { getPaymentById, deletePayment } from "@/services/tenantPaymentThunks.js
 import { Button } from "@/components/ui/button"
 
 const STATUS_CONFIG = {
-  success: { icon: <CheckCircle2 size={14} />, classes: "bg-green-50 text-green-700 border border-green-200" },
-  refunded: { icon: <CheckCircle2 size={14} />, classes: "bg-blue-50 text-blue-700 border border-blue-200" },
-  pending: { icon: <Clock size={14} />, classes: "bg-amber-50 text-amber-700 border border-amber-200" },
-  failed: { icon: <XCircle size={14} />, classes: "bg-red-50 text-red-700 border border-red-200" },
+  success:  { icon: <CheckCircle2 size={14} />, classes: "bg-green-50 text-green-700 border border-green-200"  },
+  refunded: { icon: <CheckCircle2 size={14} />, classes: "bg-blue-50 text-blue-700 border border-blue-200"    },
+  pending:  { icon: <Clock size={14} />,         classes: "bg-amber-50 text-amber-700 border border-amber-200" },
+  failed:   { icon: <XCircle size={14} />,        classes: "bg-red-50 text-red-700 border border-red-200"      },
 }
 
 const getStatus = (status) =>
   STATUS_CONFIG[status?.toLowerCase()] ?? {
-    icon: <Clock size={14} />,
+    icon:    <Clock size={14} />,
     classes: "bg-beige-card text-brown-muted border border-beige-card",
   }
 
@@ -33,12 +33,18 @@ const DetailRow = ({ icon, label, value, mono }) => (
   </div>
 )
 
+const formatDate = (ts) =>
+  ts ? new Date(ts).toLocaleString("en-IN", {
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  }) : "—"
+
 const PaymentDetails = () => {
   const { paymentId } = useParams()
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch      = useDispatch()
+  const navigate      = useNavigate()
   const { paymentDetails, loading } = useSelector((state) => state.payment)
-  
+
   useEffect(() => {
     dispatch(getPaymentById(paymentId))
   }, [dispatch, paymentId])
@@ -64,7 +70,7 @@ const PaymentDetails = () => {
             <Skeleton className="h-6 w-20 rounded-full bg-white/60" />
           </div>
           <div className="px-6 py-2 space-y-1">
-            {[...Array(5)].map((_, i) => (
+            {[...Array(7)].map((_, i) => (
               <div key={i} className="flex justify-between py-3.5 border-b border-beige-card/60">
                 <Skeleton className="h-4 w-28 rounded-btn bg-beige-card" />
                 <Skeleton className="h-4 w-36 rounded-btn bg-beige-card" />
@@ -80,12 +86,6 @@ const PaymentDetails = () => {
   )
 
   const { icon, classes } = getStatus(paymentDetails.payment_status)
-
-  const formatDate = (ts) =>
-    ts ? new Date(ts).toLocaleString("en-IN", {
-      day: "2-digit", month: "short", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
-    }) : "—"
 
   return (
     <div className="min-h-screen bg-cream-bg px-4 py-10 font-montserrat">
@@ -133,6 +133,25 @@ const PaymentDetails = () => {
               value={paymentDetails.payment_status}
             />
             <DetailRow
+              icon={<CreditCard size={14} />}
+              label="Payment Type"
+              value={paymentDetails.payment_type === "monthly" ? "Monthly Rent" : "Security Deposit"}
+            />
+            {paymentDetails.payment_type === "monthly" && paymentDetails.month_year && (
+              <DetailRow
+                icon={<CalendarDays size={14} />}
+                label="Month"
+                value={paymentDetails.month_year}
+              />
+            )}
+            {paymentDetails.due_date && (
+              <DetailRow
+                icon={<CalendarDays size={14} />}
+                label="Due Date"
+                value={formatDate(paymentDetails.due_date)}
+              />
+            )}
+            <DetailRow
               icon={<Hash size={14} />}
               label="Transaction ID"
               value={paymentDetails.transaction_id || "Not generated"}
@@ -146,8 +165,13 @@ const PaymentDetails = () => {
             />
             <DetailRow
               icon={<CalendarDays size={14} />}
-              label="Payment Date"
+              label="Created At"
               value={formatDate(paymentDetails.created_at)}
+            />
+            <DetailRow
+              icon={<CalendarDays size={14} />}
+              label="Updated At"
+              value={formatDate(paymentDetails.updated_at)}
             />
           </div>
 

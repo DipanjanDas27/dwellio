@@ -4,10 +4,10 @@ import { CreditCard, CheckCircle2, Clock, XCircle, ArrowRight } from "lucide-rea
 import { Button } from "@/components/ui/button"
 
 const STATUS_CONFIG = {
-  refunded:  { icon: <CheckCircle2 size={13} />, classes: "bg-blue-50 text-blue-700 border border-blue-200"   },
-  success:   { icon: <CheckCircle2 size={13} />, classes: "bg-green-50 text-green-700 border border-green-200" },
-  pending:   { icon: <Clock size={13} />,         classes: "bg-amber-50 text-amber-700 border border-amber-200" },
-  failed:    { icon: <XCircle size={13} />,        classes: "bg-red-50 text-red-700 border border-red-200"      },
+  refunded: { icon: <CheckCircle2 size={13} />, classes: "bg-blue-50 text-blue-700 border border-blue-200" },
+  success: { icon: <CheckCircle2 size={13} />, classes: "bg-green-50 text-green-700 border border-green-200" },
+  pending: { icon: <Clock size={13} />, classes: "bg-amber-50 text-amber-700 border border-amber-200" },
+  failed: { icon: <XCircle size={13} />, classes: "bg-red-50 text-red-700 border border-red-200" },
 }
 
 const getStatus = (status) =>
@@ -35,18 +35,26 @@ const PaymentCard = ({ payment, onView }) => {
             {payment.transaction_id || "Not generated"}
           </p>
         </div>
-        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize shrink-0 ${classes}`}>
-          {icon}
-          {payment.payment_status}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize ${classes}`}>
+            {icon}
+            {payment.payment_status}
+          </div>
+          <div className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-beige-card text-brown-muted border border-beige-card/60">
+            {payment.payment_type === "monthly" ? "Monthly" : "Security"}
+          </div>
         </div>
       </div>
 
       <div className="px-5 py-4 flex items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold text-brown-muted leading-none mb-1">Amount</p>
+        <div className="space-y-1">
+          <p className="text-xs font-semibold text-brown-muted leading-none">Amount</p>
           <p className="text-xl font-extrabold text-brown-dark leading-none">
             ₹{Number(payment.amount).toLocaleString("en-IN")}
           </p>
+          {payment.payment_type === "monthly" && payment.month_year && (
+            <p className="text-xs font-semibold text-brown-muted">{payment.month_year}</p>
+          )}
         </div>
 
         <Button

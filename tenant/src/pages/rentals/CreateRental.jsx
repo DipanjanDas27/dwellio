@@ -16,25 +16,25 @@ const CreateRental = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  
+
   const params = new URLSearchParams(location.search)
   const rentalId = params.get("renew")
   const isRenew = Boolean(rentalId)
-  
-  const { security_deposit, notice_period } = location.state || {}
-  
+
   const { loading, error } = useSelector((state) => state.rental)
-  
+
   const idempotencyKey = useMemo(() => crypto.randomUUID(), [])
+
+  const { security_deposit, notice_period, monthly_rent } = location.state || {}
 
   const { register, handleSubmit, formState: { isValid, errors } } = useForm({
     mode: "onChange",
     defaultValues: {
       notice_period: notice_period ?? "",
-      monthly_rent: security_deposit ?? "",
+      security_deposit: security_deposit ?? "",
+      monthly_rent: monthly_rent ?? "",
     }
   })
-
   const onSubmit = async (data) => {
     if (isRenew) {
       const renewData = {
@@ -142,7 +142,7 @@ const CreateRental = () => {
                       {...register("notice_period")}
                     />
                   </motion.div>
-
+                  
                   <motion.div className="space-y-1.5" {...fieldAnim(0.36)}>
                     <Label className="text-sm font-bold text-brown-dark flex items-center gap-1.5">
                       <IndianRupee size={14} className="text-brown-muted" />
@@ -155,9 +155,10 @@ const CreateRental = () => {
                         type="number"
                         readOnly
                         className="pl-8 h-12 bg-beige-card border-beige-card rounded-btn text-brown-dark font-semibold cursor-not-allowed opacity-75 focus-visible:ring-0"
-                        {...register("monthly_rent", { required: "Monthly rent is required" })}
+                        {...register("security_deposit")}
                       />
                     </div>
+                    <input type="hidden" {...register("monthly_rent", { required: true })} />
                     {errors.monthly_rent && (
                       <p className="text-xs font-semibold text-red-500">{errors.monthly_rent.message}</p>
                     )}
@@ -212,7 +213,7 @@ const CreateRental = () => {
                       {isRenew ? <RefreshCw size={16} /> : <FilePlus size={16} />}
                       {isRenew ? "Renew Rental" : "Create Rental"}
                     </span>
-                   )} 
+                  )}
                 </Button>
 
                 <Button
@@ -230,8 +231,8 @@ const CreateRental = () => {
           </div>
 
         </div>
-      </motion.div>
-    </div>
+      </motion.div >
+    </div >
   )
 }
 

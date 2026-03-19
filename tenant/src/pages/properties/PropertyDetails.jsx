@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button"
 
 const FURNISHING_LABEL = {
   unfurnished: "Unfurnished",
-  semi:        "Semi Furnished",
-  fully:       "Fully Furnished",
+  semi: "Semi Furnished",
+  fully: "Fully Furnished",
 }
 
 const InfoCard = ({ icon, label, value }) => (
@@ -41,6 +41,7 @@ const PropertyDetails = () => {
       state: {
         security_deposit: property.security_deposit,
         notice_period: property.notice_period_days,
+        monthly_rent: property.rent_amount,
       }
     })
   }, [navigate, propertyId, property])
@@ -164,14 +165,14 @@ const PropertyDetails = () => {
         >
           <p className="text-xs font-bold text-brown-muted uppercase tracking-widest mb-3">Property Details</p>
           <div className="grid grid-cols-2 gap-3">
-            <InfoCard icon={<IndianRupee size={18} className="text-brown-dark" />} label="Monthly Rent"       value={`₹${Number(property.rent_amount).toLocaleString("en-IN")}`} />
-            <InfoCard icon={<IndianRupee size={18} className="text-brown-dark" />} label="Security Deposit"   value={`₹${Number(property.security_deposit).toLocaleString("en-IN")}`} />
-            <InfoCard icon={<Clock       size={18} className="text-brown-dark" />} label="Notice Period"      value={`${property.notice_period_days} days`} />
-            <InfoCard icon={<BedDouble   size={18} className="text-brown-dark" />} label="Total Rooms"        value={property.total_rooms} />
-            <InfoCard icon={<Building2   size={18} className="text-brown-dark" />} label="Available Rooms"    value={property.available_rooms} />
-            <InfoCard icon={<Sofa        size={18} className="text-brown-dark" />} label="Furnishing"         value={FURNISHING_LABEL[property.furnishing] ?? property.furnishing} />
-            <InfoCard icon={<MapPin      size={18} className="text-brown-dark" />} label="City"               value={property.city} />
-            <InfoCard icon={<MapPin      size={18} className="text-brown-dark" />} label="State"              value={property.state} />
+            <InfoCard icon={<IndianRupee size={18} className="text-brown-dark" />} label="Monthly Rent" value={`₹${Number(property.rent_amount).toLocaleString("en-IN")}`} />
+            <InfoCard icon={<IndianRupee size={18} className="text-brown-dark" />} label="Security Deposit" value={`₹${Number(property.security_deposit).toLocaleString("en-IN")}`} />
+            <InfoCard icon={<Clock size={18} className="text-brown-dark" />} label="Notice Period" value={`${property.notice_period_days} days`} />
+            <InfoCard icon={<BedDouble size={18} className="text-brown-dark" />} label="Total Rooms" value={property.total_rooms} />
+            <InfoCard icon={<Building2 size={18} className="text-brown-dark" />} label="Available Rooms" value={property.available_rooms} />
+            <InfoCard icon={<Sofa size={18} className="text-brown-dark" />} label="Furnishing" value={FURNISHING_LABEL[property.furnishing] ?? property.furnishing} />
+            <InfoCard icon={<MapPin size={18} className="text-brown-dark" />} label="City" value={property.city} />
+            <InfoCard icon={<MapPin size={18} className="text-brown-dark" />} label="State" value={property.state} />
           </div>
         </motion.div>
 

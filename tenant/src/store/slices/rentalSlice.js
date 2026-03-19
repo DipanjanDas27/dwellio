@@ -32,7 +32,10 @@ const rentalSlice = createSlice({
         state.rental = action.payload
       })
       .addCase(createRental.fulfilled, (state, action) => {
-        state.rentals.push(action.payload)
+        if (action.payload?.rental) {
+          state.rentals.push(action.payload.rental)
+        }
+        state.loading = false
       })
 
     builder

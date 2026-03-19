@@ -35,11 +35,12 @@ export const createPayment = async (data, db = pool) => {
     INSERT INTO payments (
       agreement_id, tenant_id, owner_id,
       amount, payment_status,
+      payment_type, due_date, month_year,
       transaction_id, idempotency_key
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
     RETURNING *;
-  `;
+  `
 
   const values = [
     data.agreement_id,
@@ -47,13 +48,16 @@ export const createPayment = async (data, db = pool) => {
     data.owner_id,
     data.amount,
     data.payment_status ?? "pending",
-    data.transaction_id,
-    data.idempotency_key, 
-  ];
+    data.payment_type ?? "security",
+    data.due_date ?? null,
+    data.month_year ?? null,
+    data.transaction_id ?? null,
+    data.idempotency_key,
+  ]
 
-  const { rows } = await db.query(query, values);
-  return rows[0];
-};
+  const { rows } = await db.query(query, values)
+  return rows[0]
+}
 
 export const getPaymentsByTenant = async (tenantId) => {
   const { rows } = await pool.query(
@@ -82,6 +86,17 @@ export const getPaymentById = async (paymentId) => {
   return rows[0];
 };
 
+
+export const getPaymentsByAgreementId = async (agreementId) => {
+  const query = `
+    SELECT * FROM payments
+    WHERE agreement_id = $1
+    ORDER BY created_at DESC
+  `
+  const { rows } = await pool.query(query, [agreementId])
+  return rows
+}
+
 export const getPaymentByTransactionId = async (transactionId) => {
   const query = `
     SELECT *
@@ -104,7 +119,7 @@ export const getPaymentByIdempotencyKey = async (
   return rows[0];
 };
 
-export const updatePaymentStatus = async (id, status, transaction_id ,db=pool) => {
+export const updatePaymentStatus = async (id, status, transaction_id, db = pool) => {
   const { rows } = await db.query(
     `UPDATE payments
      SET payment_status = $1,
@@ -124,3 +139,54 @@ export const deletePayment = async (id) => {
   );
   return rows[0];
 };
+
+export const createMonthlyPayment = async (data ,db =pool) => {
+  const query = `
+    INSERT INTO payments (
+      agreement_id, tenant_id, owner_id,
+      amount, payment_status, payment_type,
+      due_date, month_year, idempotency_key
+    )
+    VALUES ($1,$2,$3,$4,'pending','monthly',$5,$6,$7)
+    ON CONFLICT (idempotency_key) DO NOTHING
+    RETURNING *;
+  `
+  const { rows } = await db.query(query, [
+    data.agreement_id,
+    data.tenant_id,
+    data.owner_id,
+    data.amount,
+    data.due_date,
+    data.month_year,
+    data.idempotency_key,
+  ])
+  return rows[0]
+}
+
+export const getUnpaidMonthlyPayments = async (daysOverdue) => {
+  const query = `
+    SELECT p.*, 
+           u.email AS tenant_email,
+           u.full_name AS tenant_name
+    FROM payments p
+    JOIN users u ON u.id = p.tenant_id
+    WHERE p.payment_type = 'monthly'
+      AND p.payment_status = 'pending'
+      AND p.due_date <= CURRENT_DATE - INTERVAL '${daysOverdue} days'
+  `
+  const { rows } = await pool.query(query)
+  return rows
+}
+
+export const getActiveRentalsForCron = async () => {
+  const query = `
+    SELECT r.*,
+           u.email AS tenant_email,
+           u.full_name AS tenant_name
+    FROM rental_agreements r
+    JOIN users u ON u.id = r.tenant_id
+    WHERE r.status = 'active'
+  `
+  const { rows } = await pool.query(query)
+  return rows
+}

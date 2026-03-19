@@ -36,13 +36,6 @@ export const createRental = asyncHandler(async (req, res) => {
   ) {
     throw new ApiError(400, "Required fields missing");
   }
-
-  console.log("createRental hit")
-  console.log("body:", req.body)
-  console.log("file:", req.file)
-  console.log("user:", req.user?.id)
-  console.log("propertyId:", propertyId)
-
   try {
     const rental = await createRentalService({
       property_id: propertyId,

@@ -54,7 +54,7 @@ export const createRental = async (data, db = pool) => {
     data.end_date,
     data.notice_period ? Number(data.notice_period) : null,
     data.monthly_rent,
-    data.agreement_document_url ? agreement_document_url : "",
+    data.agreement_document_url ?? "",
     data.status,
     data.security_paid,
   ]
@@ -65,19 +65,27 @@ export const createRental = async (data, db = pool) => {
 
 export const getRentalsByTenant = async (tenantId) => {
   const { rows } = await pool.query(
-    `SELECT * FROM rental_agreements WHERE tenant_id = $1;`,
+    `SELECT r.*, p.title AS property_title, p.city AS property_city
+     FROM rental_agreements r
+     JOIN properties p ON p.id = r.property_id
+     WHERE r.tenant_id = $1
+     ORDER BY r.created_at DESC`,
     [tenantId]
-  );
-  return rows;
-};
+  )
+  return rows
+}
 
 export const getRentalsByOwner = async (ownerId) => {
   const { rows } = await pool.query(
-    `SELECT * FROM rental_agreements WHERE owner_id = $1;`,
+    `SELECT r.*, p.title AS property_title, p.city AS property_city
+     FROM rental_agreements r
+     JOIN properties p ON p.id = r.property_id
+     WHERE r.owner_id = $1
+     ORDER BY r.created_at DESC`,
     [ownerId]
-  );
-  return rows;
-};
+  )
+  return rows
+}
 
 export const getRentalById = async (rentalId) => {
   const query = `

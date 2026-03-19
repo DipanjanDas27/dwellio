@@ -15,7 +15,7 @@ import { ApiError } from "../utils/apiError.js";
 import { passwordUpdatedTemplate, accountDeletedTemplate, passwordResetSuccessTemplate } from "../templates/userMail.template.js";
 
 
-export const getCurrentUserService = async (userId) => {
+export const getCurrentUserService = async (userId) => { 
   const user = await getUserById(userId);
   if (!user) throw new ApiError(404, "User not found");
   return user;

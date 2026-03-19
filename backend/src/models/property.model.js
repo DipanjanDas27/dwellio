@@ -48,20 +48,22 @@ export const createProperty = async (data) => {
       owner_id, title, description,
       bhk, furnishing,
       address, city, state, pincode,
-      rent_amount, security_deposit,notice_period_days,
+      rent_amount, security_deposit, notice_period_days,
       total_rooms, available_rooms,
-      image_url, is_available
+      image_url, is_available,
+      is_shared, max_tenants, current_tenants
     )
     VALUES (
       $1,$2,$3,$4,
       $5,$6,
       $7,$8,$9,$10,
-      $11,$12,
-      $13,$14,
-      $15,$16
+      $11,$12,$13,
+      $14,$15,
+      $16,$17,
+      $18,$19
     )
     RETURNING *;
-  `;
+  `
 
   const values = [
     data.owner_id,
@@ -80,11 +82,14 @@ export const createProperty = async (data) => {
     data.available_rooms,
     data.image_url,
     data.is_available ?? true,
-  ];
+    data.is_shared ?? false,
+    data.max_tenants ?? 1,
+    data.current_tenants ?? 0,
+  ]
 
-  const { rows } = await pool.query(query, values);
-  return rows[0];
-};
+  const { rows } = await pool.query(query, values)
+  return rows[0]
+}
 
 export const getPropertiesByFilter = async ({
   minPrice,

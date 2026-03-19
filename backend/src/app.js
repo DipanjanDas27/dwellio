@@ -11,8 +11,20 @@ import rentalRoutes from "./routes/rental.route.js";
 import paymentRoutes from "./routes/payment.route.js";
 
 const app = express()
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(",").map(o => o.trim())
+    : []
 
-app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }))
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true)
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true)
+        }
+        return callback(new Error("Not allowed by CORS"))
+    },
+    credentials: true,
+}))
 app.use(cookieparser())
 app.use(express.json({ limit: "20kb" }))
 app.use(express.urlencoded({ extended: true, limit: "20kb" }))

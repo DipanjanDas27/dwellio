@@ -48,6 +48,11 @@ CREATE TABLE IF NOT EXISTS properties (
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
+ALTER TABLE properties ADD COLUMN is_shared BOOLEAN DEFAULT FALSE;
+ALTER TABLE properties ADD COLUMN max_tenants INT DEFAULT 1;
+ALTER TABLE properties ADD COLUMN current_tenants INT DEFAULT 0;
+
+
 CREATE TABLE IF NOT EXISTS rental_agreements (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -98,11 +103,6 @@ CREATE TABLE IF NOT EXISTS payments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE TABLE IF NOT EXISTS otps (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email VARCHAR(255) NOT NULL,
-    otp VARCHAR(10) NOT NULL,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+ALTER TABLE payments ADD COLUMN payment_type VARCHAR(20) DEFAULT 'security' CHECK (payment_type IN ('security', 'monthly'));
+ALTER TABLE payments ADD COLUMN due_date DATE;
+ALTER TABLE payments ADD COLUMN month_year VARCHAR(7);

@@ -7,6 +7,7 @@ import {
   getTenantPaymentsService,
   getOwnerPaymentsService,
   getPaymentByIdService,
+  getPaymentsByAgreementService,
   getPaymentByTransactionIdService,
   deletePaymentService,
 } from "../services/payment.service.js";
@@ -84,12 +85,25 @@ export const getOwnerPayments = asyncHandler(async (req, res) => {
 
 export const getPaymentById = asyncHandler(async (req, res) => {
   const { paymentId } = req.params
-  
+
   if (!paymentId) throw new ApiError(400, "Payment id required")
 
   const payment = await getPaymentByIdService(paymentId, req.user.id)
 
   return res.status(200).json(new ApiResponse(200, payment, "Payment fetched successfully"))
+})
+
+export const getPaymentsByAgreement = asyncHandler(async (req, res) => {
+  const { agreementId } = req.params
+
+  const payments = await getPaymentsByAgreementService(
+    agreementId,
+    req.user.id
+  )
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, payments, "Payments fetched successfully"))
 })
 
 export const getPaymentByTransactionId = asyncHandler(async (req, res) => {

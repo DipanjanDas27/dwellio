@@ -6,6 +6,7 @@ import {
   deletePayment,
   getPaymentById,
   getPaymentByTransactionId,
+  getPaymentsByAgreementId,
   getPaymentByIdempotencyKey
 } from "../models/payment.model.js";
 
@@ -23,6 +24,9 @@ export const createPaymentService = async ({
   amount,
   idempotency_key,
 }) => {
+  let payment
+  let gatewayResponse
+  let gatewaySuccess = false
 
   const existingPayment = await getPaymentByIdempotencyKey(idempotency_key)
   if (existingPayment) return existingPayment
@@ -33,27 +37,61 @@ export const createPaymentService = async ({
   const owner = await getUserById(owner_id)
   if (!owner) throw new ApiError(404, "Owner not found")
 
-  if (tenant.role !== "tenant")
-    throw new ApiError(403, "Only tenants can make payments")
-
   const rental = await getRentalById(agreement_id)
   if (!rental) throw new ApiError(404, "Rental not found")
 
   if (rental.status === "cancelled")
     throw new ApiError(400, "Payment not allowed for this rental status")
 
-  let payment
-  let gatewayResponse
-  let gatewaySuccess = false
+  // ── case 1: pending rental — retry failed security deposit ────────
+  if (rental.status === "pending") {
+    const agreementPayments = await getPaymentsByAgreementId(agreement_id)
 
-  payment = await createPayment({
-    agreement_id,
-    tenant_id,
-    owner_id,
-    amount,
-    payment_status: "pending",
-    idempotency_key,
-  })
+    const failedSecurityPayment = agreementPayments.find(
+      p => p.payment_type === "security" && p.payment_status === "failed"
+    )
+
+    if (failedSecurityPayment) {
+      payment = failedSecurityPayment
+    } else {
+      payment = await createPayment({
+        agreement_id,
+        tenant_id,
+        owner_id,
+        amount,
+        payment_status: "pending",
+        payment_type: "security",
+        idempotency_key,
+      })
+    }
+  }
+  // ── case 2: active rental — check for cron-created monthly payment ─
+  else {
+    const now = new Date()
+    const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+    const cronIdempotencyKey = `monthly-${agreement_id}-${monthYear}`
+
+    const existingMonthlyPayment = await getPaymentByIdempotencyKey(cronIdempotencyKey)
+
+    if (
+      existingMonthlyPayment &&
+      (existingMonthlyPayment.payment_status === "pending" ||
+        existingMonthlyPayment.payment_status === "failed")
+    ) {
+      await updatePaymentStatus(existingMonthlyPayment.id, "pending", null)
+      payment = { ...existingMonthlyPayment, payment_status: "pending" }
+    } else {
+      payment = await createPayment({
+        agreement_id,
+        tenant_id,
+        owner_id,
+        amount,
+        payment_status: "pending",
+        payment_type: "monthly",
+        idempotency_key,
+      })
+    }
+  }
 
   await sendMail({
     to: tenant.email,
@@ -62,26 +100,16 @@ export const createPaymentService = async ({
   })
 
   try {
-
-    gatewayResponse = await processDummyPayment({
-      amount,
-      mode: "auto",
-    })
+    gatewayResponse = await processDummyPayment({ amount, mode: "auto" })
 
     if (!gatewayResponse || gatewayResponse.status !== "success") {
-
       const failed = await updatePaymentStatus(payment.id, "failed", null)
-
-      await sendMail({
-        to: tenant.email,
-        subject: "Payment Failed - Dwellio",
-        html: paymentFailedTemplate(amount),
-      })
-
+      await sendMail({ to: tenant.email, subject: "Payment Failed - Dwellio", html: paymentFailedTemplate(amount) })
       return failed
     }
 
     gatewaySuccess = true
+
 
     const result = await updatePaymentStatus(
       payment.id,
@@ -89,48 +117,31 @@ export const createPaymentService = async ({
       gatewayResponse.transaction_id
     )
 
-    await updateRentalAfterPayment(agreement_id)
 
-    await sendMail({
-      to: tenant.email,
-      subject: "Payment Successful - Dwellio",
-      html: paymentSuccessTemplate(amount),
-    })
+    if (rental.status === "pending") {
+      await updateRentalAfterPayment(agreement_id)
+    }
 
-    await sendMail({
-      to: owner.email,
-      subject: "Payment Received - Dwellio",
-      html: ownerPaymentReceivedTemplate(tenant.full_name, amount),
-    })
+    await sendMail({ to: tenant.email, subject: "Payment Successful - Dwellio", html: paymentSuccessTemplate(amount) })
+    await sendMail({ to: owner.email, subject: "Payment Received - Dwellio", html: ownerPaymentReceivedTemplate(tenant.full_name, amount) })
 
     return result
 
   } catch (error) {
+    console.error("createPaymentService error:", error.message)
 
-    console.error(error)
     if (gatewaySuccess && gatewayResponse?.transaction_id) {
-
-      await processDummyRefund({
-        transaction_id: gatewayResponse.transaction_id,
-      })
-
+      await processDummyRefund({ transaction_id: gatewayResponse.transaction_id })
       if (payment?.id) {
-        await updatePaymentStatus(
-          payment.id,
-          "refunded",
-          gatewayResponse.transaction_id
-        )
+        await updatePaymentStatus(payment.id, "refunded", gatewayResponse.transaction_id)
       }
-      await sendMail({
-        to: tenant.email,
-        subject: "Refund Processed - Dwellio",
-        html: refundTemplate(amount),
-      })
+      await sendMail({ to: tenant.email, subject: "Refund Processed - Dwellio", html: refundTemplate(amount) })
     }
 
     throw new ApiError(500, "Payment processing failed. Refund initiated if applicable.")
   }
 }
+
 export const getTenantPaymentsService = async (tenantId) => {
   const tenant = await getUserById(tenantId);
   if (!tenant) throw new ApiError(404, "Tenant not found");
@@ -167,6 +178,24 @@ export const getPaymentByIdService = async (paymentId, userId) => {
 
   return payment;
 };
+
+export const getPaymentsByAgreementService = async (agreementId, userId) => {
+  if (!agreementId) throw new ApiError(400, "Agreement ID required")
+
+  const payments = await getPaymentsByAgreementId(agreementId)
+
+  if (!payments.length) return []
+
+  const first = payments[0]
+  if (
+    String(first.tenant_id) !== String(userId) &&
+    String(first.owner_id) !== String(userId)
+  ) {
+    throw new ApiError(403, "Forbidden: Access denied")
+  }
+
+  return payments
+}
 
 export const getPaymentByTransactionIdService = async (transactionId, userId) => {
   const payment = await getPaymentByTransactionId(transactionId);

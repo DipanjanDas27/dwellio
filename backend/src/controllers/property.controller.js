@@ -28,6 +28,8 @@ export const createProperty = asyncHandler(async (req, res) => {
     security_deposit,
     total_rooms,
     available_rooms,
+    is_shared,
+    max_tenants,
   } = req.body;
 
   if (
@@ -83,6 +85,9 @@ export const createProperty = asyncHandler(async (req, res) => {
       total_rooms: Number(total_rooms),
       available_rooms: Number(available_rooms),
       is_available: Number(available_rooms) > 0,
+      is_shared: is_shared === true || is_shared === "true" || false,
+      max_tenants: max_tenants ? Number(max_tenants) : 1,
+      current_tenants: 0,
     },
     file: req.file,
   });

@@ -6,7 +6,7 @@ import {
 } from "../models/payment.model.js"
 import { getUserById } from "../models/user.model.js"
 import { terminateExpiredRentalsService } from "./rental.service.js"
-import { sendMail } from "./mail.service.js"
+import sendMail from "./mail.service.js"
 import {
   monthlyPaymentDueTemplate,
   monthlyPaymentReminderTemplate,
@@ -21,9 +21,9 @@ export const startCronJobs = () => {
     try {
       const rentals = await getActiveRentalsForCron()
 
-      const now       = new Date()
+      const now = new Date()
       const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
-      const dueDate   = new Date(now.getFullYear(), now.getMonth(), 1)
+      const dueDate = new Date(now.getFullYear(), now.getMonth(), 1)
         .toISOString().split("T")[0]
 
       let created = 0
@@ -32,12 +32,12 @@ export const startCronJobs = () => {
         const idempotencyKey = `monthly-${rental.id}-${monthYear}`
 
         const payment = await createMonthlyPayment({
-          agreement_id:    rental.id,
-          tenant_id:       rental.tenant_id,
-          owner_id:        rental.owner_id,
-          amount:          rental.monthly_rent,
-          due_date:        dueDate,
-          month_year:      monthYear,
+          agreement_id: rental.id,
+          tenant_id: rental.tenant_id,
+          owner_id: rental.owner_id,
+          amount: rental.monthly_rent,
+          due_date: dueDate,
+          month_year: monthYear,
           idempotency_key: idempotencyKey,
         })
 
@@ -46,17 +46,17 @@ export const startCronJobs = () => {
         created++
 
         await sendMail({
-          to:      rental.tenant_email,
+          to: rental.tenant_email,
           subject: `Monthly Rent Due for ${monthYear} - Dwellio`,
-          html:    monthlyPaymentDueTemplate(rental.monthly_rent, monthYear),
+          html: monthlyPaymentDueTemplate(rental.monthly_rent, monthYear),
         })
 
         const owner = await getUserById(rental.owner_id)
         if (owner) {
           await sendMail({
-            to:      owner.email,
+            to: owner.email,
             subject: `Tenant Rent Due for ${monthYear} - Dwellio`,
-            html:    ownerMonthlyPaymentDueTemplate(
+            html: ownerMonthlyPaymentDueTemplate(
               rental.tenant_name,
               rental.monthly_rent,
               monthYear
@@ -87,9 +87,9 @@ export const startCronJobs = () => {
         )
 
         await sendMail({
-          to:      payment.tenant_email,
+          to: payment.tenant_email,
           subject: `Payment Reminder — ${payment.month_year} - Dwellio`,
-          html:    monthlyPaymentReminderTemplate(
+          html: monthlyPaymentReminderTemplate(
             payment.amount,
             payment.month_year,
             daysOverdue
@@ -106,7 +106,7 @@ export const startCronJobs = () => {
     }
   })
 
-  
+
   cron.schedule("0 0 * * *", async () => {
     console.log("[CRON] Running expired rental termination...")
 

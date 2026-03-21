@@ -1,7 +1,9 @@
 import dotenv from "dotenv";
 import { connectDB } from "./config/db.js";
-import  app  from "./app.js";
+import app from "./app.js";
 import initializeDatabase from "./config/initdb.js";
+import { startCronJobs } from "./services/cron.service.js"
+
 
 dotenv.config({
     path: './.env'
@@ -16,6 +18,8 @@ connectDB()
             console.log(`Server is running on port ${process.env.PORT || 8001}`);
         });
         initializeDatabase();
+        startCronJobs()
+        
     })
     .catch((err) => {
         console.error("Server failed to start:", err);

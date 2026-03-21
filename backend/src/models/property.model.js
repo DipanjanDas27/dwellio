@@ -155,47 +155,46 @@ export const updateProperty = async (id, data) => {
   const query = `
     UPDATE properties
     SET
-      title = COALESCE($1, title),
-      description = COALESCE($2, description),
-      bhk = COALESCE($3, bhk),
-      furnishing = COALESCE($4, furnishing),
-      address = COALESCE($5, address),
-      city = COALESCE($6, city),
-      state = COALESCE($7, state),
-      pincode = COALESCE($8, pincode),
-      rent_amount = COALESCE($9, rent_amount),
-      security_deposit = COALESCE($10, security_deposit),
-      total_rooms = COALESCE($11, total_rooms),
-      available_rooms = COALESCE($12, available_rooms),
-      is_available = COALESCE($13, is_available),
+      title              = COALESCE($1,  title),
+      description        = COALESCE($2,  description),
+      bhk                = COALESCE($3,  bhk),
+      furnishing         = COALESCE($4,  furnishing),
+      address            = COALESCE($5,  address),
+      city               = COALESCE($6,  city),
+      state              = COALESCE($7,  state),
+      pincode            = COALESCE($8,  pincode),
+      rent_amount        = COALESCE($9,  rent_amount),
+      security_deposit   = COALESCE($10, security_deposit),
+      total_rooms        = COALESCE($11, total_rooms),
+      available_rooms    = COALESCE($12, available_rooms),
+      is_available       = COALESCE($13, is_available),
       notice_period_days = COALESCE($14, notice_period_days),
-      
-      updated_at = CURRENT_TIMESTAMP
-    WHERE id = $14
+      updated_at         = CURRENT_TIMESTAMP
+    WHERE id = $15
     RETURNING *;
-  `;
+  `
 
   const values = [
     data.title,
     data.description,
-    data.bhk,
-    data.furnishing,
-    data.address,
-    data.city,
-    data.state,
-    data.pincode,
-    data.rent_amount,
-    data.security_deposit,
-    data.total_rooms,
-    data.notice_period_days,
-    data.available_rooms,
-    data.is_available,
-    id,
-  ];
+    data.bhk ? Number(data.bhk) : null,
+    data.furnishing ?? null,
+    data.address ?? null,
+    data.city ?? null,
+    data.state ?? null,
+    data.pincode ?? null,
+    data.rent_amount ? Number(data.rent_amount) : null,
+    data.security_deposit !== undefined ? Number(data.security_deposit) : null,
+    data.total_rooms ? Number(data.total_rooms) : null,
+    data.available_rooms !== undefined ? Number(data.available_rooms) : null,
+    data.is_available !== undefined ? data.is_available : null,
+    data.notice_period_days !== undefined ? Number(data.notice_period_days) : null,
+    id,  
+  ]
 
-  const { rows } = await pool.query(query, values);
-  return rows[0];
-};
+  const { rows } = await pool.query(query, values)
+  return rows[0]
+}
 
 export const updatePropertyAvailability = async (
   propertyId,

@@ -81,31 +81,31 @@ export const createRentalService = async ({
     rental = await createRental({
       property_id,
       tenant_id,
-      owner_id:               lockedProperty.owner_id,
+      owner_id: lockedProperty.owner_id,
       start_date,
       end_date,
-      notice_period:          notice_period ? Number(notice_period) : null,
+      notice_period: notice_period ? Number(notice_period) : null,
       monthly_rent,
       agreement_document_url,
-      status:                 "pending",
-      security_paid:          false,
+      status: "pending",
+      security_paid: false,
     }, client)
 
     payment = await createPayment({
-      agreement_id:   rental.id,
+      agreement_id: rental.id,
       tenant_id,
-      owner_id:       lockedProperty.owner_id,
-      amount:         lockedProperty.security_deposit,
+      owner_id: lockedProperty.owner_id,
+      amount: lockedProperty.security_deposit,
       payment_status: "pending",
-      payment_type:   "security",
+      payment_type: "security",
       idempotency_key,
     }, client)
 
     await client.query("COMMIT")
 
     await sendMail({ to: tenant.email, subject: "Rental Request Submitted - Dwellio", html: rentalCreatedTemplate() })
-    await sendMail({ to: owner.email,  subject: "New Rental Request - Dwellio",       html: ownerRentalRequestTemplate(lockedProperty.title, tenant.full_name) })
-    await sendMail({ to: tenant.email, subject: "Payment Initiated - Dwellio",        html: paymentCreatedTemplate(lockedProperty.security_deposit) })
+    await sendMail({ to: owner.email, subject: "New Rental Request - Dwellio", html: ownerRentalRequestTemplate(lockedProperty.title, tenant.full_name) })
+    await sendMail({ to: tenant.email, subject: "Payment Initiated - Dwellio", html: paymentCreatedTemplate(lockedProperty.security_deposit) })
 
   } catch (error) {
     await client.query("ROLLBACK")
@@ -116,31 +116,28 @@ export const createRentalService = async ({
 
   const gatewayResponse = await processDummyPayment({
     amount: lockedProperty.security_deposit,
-    mode:   paymentMode,
+    mode: paymentMode,
   })
-  console.log("1. gatewayResponse:", gatewayResponse)
+
 
   const updateClient = await pool.connect()
-  console.log("2. updateClient connected")
+
 
   try {
     await updateClient.query("BEGIN")
-    console.log("3. second transaction started")
 
     if (!gatewayResponse || gatewayResponse.status !== "success") {
-      console.log("4. payment failed branch")
       await updatePaymentStatus(payment.id, "failed", null, updateClient)
       await updateClient.query("COMMIT")
       await sendMail({ to: tenant.email, subject: "Payment Failed - Dwellio", html: paymentFailedTemplate(lockedProperty.security_deposit) })
       return { rental_status: "pending", payment_status: "failed", rental }
     }
 
-    console.log("5. payment success branch")
     await updatePaymentStatus(payment.id, "success", gatewayResponse.transaction_id, updateClient)
-    console.log("6. payment status updated")
+
 
     const lockedPropertyForUpdate = await getPropertyById(property_id, updateClient, true)
-    console.log("7. lockedPropertyForUpdate:", lockedPropertyForUpdate?.id)
+
 
     if (lockedPropertyForUpdate.is_shared) {
       if (lockedPropertyForUpdate.current_tenants >= lockedPropertyForUpdate.max_tenants)
@@ -162,14 +159,13 @@ export const createRentalService = async ({
         updateClient
       )
     }
-    console.log("8. availability updated")
+    
 
     await updateRentalAfterPayment(rental.id, updateClient)
-    console.log("9. rental activated")
+
 
     // ── COMMIT before createMonthlyPayment which uses pool directly ──
     await updateClient.query("COMMIT")
-    console.log("10. second transaction committed")
 
   } catch (error) {
     console.error("CATCH ERROR:", error.message)
@@ -186,37 +182,35 @@ export const createRentalService = async ({
   } finally {
     updateClient.release()
   }
-  const now       = new Date()
+  const now = new Date()
   const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
-  const dueDate   = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().split("T")[0]
+  const dueDate = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString().split("T")[0]
   const monthlyIdempotencyKey = `monthly-${rental.id}-${monthYear}`
 
   try {
     await createMonthlyPayment({
-      agreement_id:    rental.id,
+      agreement_id: rental.id,
       tenant_id,
-      owner_id:        lockedProperty.owner_id,
-      amount:          Number(monthly_rent),
-      due_date:        dueDate,
-      month_year:      monthYear,
+      owner_id: lockedProperty.owner_id,
+      amount: Number(monthly_rent),
+      due_date: dueDate,
+      month_year: monthYear,
       idempotency_key: monthlyIdempotencyKey,
     })
-    console.log("11. monthly payment created")
+
   } catch (monthlyErr) {
     console.error("monthly payment creation failed (non-critical):", monthlyErr.message)
     // non-critical — cron will create it next month
   }
 
-  await sendMail({ to: tenant.email, subject: "Payment Successful - Dwellio",          html: paymentSuccessTemplate(lockedProperty.security_deposit) })
-  await sendMail({ to: owner.email,  subject: "Payment Received - Dwellio",             html: ownerPaymentReceivedTemplate(tenant.full_name, lockedProperty.security_deposit) })
-  await sendMail({ to: tenant.email, subject: "Rental Activated - Dwellio",             html: rentalActivatedTemplate() })
-  await sendMail({ to: owner.email,  subject: "Your Property Is Now Rented - Dwellio",  html: ownerRentalActivatedTemplate(lockedProperty.title) })
+  await sendMail({ to: tenant.email, subject: "Payment Successful - Dwellio", html: paymentSuccessTemplate(lockedProperty.security_deposit) })
+  await sendMail({ to: owner.email, subject: "Payment Received - Dwellio", html: ownerPaymentReceivedTemplate(tenant.full_name, lockedProperty.security_deposit) })
+  await sendMail({ to: tenant.email, subject: "Rental Activated - Dwellio", html: rentalActivatedTemplate() })
+  await sendMail({ to: owner.email, subject: "Your Property Is Now Rented - Dwellio", html: ownerRentalActivatedTemplate(lockedProperty.title) })
   await sendMail({ to: tenant.email, subject: `Monthly Rent Due for ${monthYear} - Dwellio`, html: monthlyPaymentDueTemplate(Number(monthly_rent), monthYear) })
 
-  console.log("12. all emails sent, returning success")
-
   return {
-    rental_status:  "active",
+    rental_status: "active",
     rental,
     transaction_id: gatewayResponse.transaction_id,
   }

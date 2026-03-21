@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { Outlet, ScrollRestoration } from "react-router-dom"
+import { Outlet } from "react-router-dom"
 import Navbar from "./components/custom/Navbar"
 import Footer from "./components/custom/Footer"
 import { getCurrentUser } from "./services/userThunks"

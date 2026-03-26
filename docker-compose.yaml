@@ -1,14 +1,42 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:18
-    container_name: house_rent_pg18
+    container_name: house_rent_pg
+    restart: always
+    env_file:
+      - ./backend/.env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: house_rent_redis
+    restart: always
+    networks:
+      - app_network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: house_rent_backend
     restart: always
     env_file:
       - ./backend/.env
     ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - app_network
 
 volumes:
   pgdata:
+
+networks:
+  app_network:
+    driver: bridge

@@ -1,8 +1,9 @@
 import { MapPin, IndianRupee, Home, Sparkles } from "lucide-react"
 import { motion } from "motion/react"
 
+
 const HERO_IMG =
-  "https://www.figma.com/api/mcp/asset/c1924fc4-c377-4d13-a992-6673c7babd1d"
+  "/hero_image.png"
 const FALLBACK =
   "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80"
 

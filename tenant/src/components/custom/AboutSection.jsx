@@ -1,8 +1,7 @@
 import { useRef, useEffect, useState } from "react"
 import { motion, useInView } from "motion/react"
 
-const ABOUT_IMG =
-  "https://www.figma.com/api/mcp/asset/e6a199db-8280-4765-b143-5b16ca463550"
+const ABOUT_IMG ="/mask_group.png"
 const FALLBACK =
   "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=900&q=80"
 

@@ -84,6 +84,10 @@ ALTER TABLE rental_agreements
   )
   WHERE (status = 'active');
 
+ALTER TABLE rental_agreements
+ADD COLUMN termination_requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN termination_effective_date DATE;
+
 CREATE TABLE IF NOT EXISTS payments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 

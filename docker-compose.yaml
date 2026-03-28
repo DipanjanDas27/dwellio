@@ -6,11 +6,11 @@ services:
     env_file:
       - ./backend/.env
     volumes:
-      - pgdata:/var/lib/postgresql        
+      - pgdata:/var/lib/postgresql
     networks:
       - app_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dipanjan -d house_rent"]   
+      test: [ "CMD-SHELL", "pg_isready -U dipanjan -d house_rent" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,7 +22,7 @@ services:
     networks:
       - app_network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -53,6 +53,8 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin123
     ports:
       - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     depends_on:
       postgres:
         condition: service_healthy
@@ -61,6 +63,7 @@ services:
 
 volumes:
   pgdata:
+
 
 networks:
   app_network:

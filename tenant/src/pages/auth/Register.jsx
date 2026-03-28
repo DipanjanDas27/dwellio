@@ -34,6 +34,7 @@ const Register = () => {
   const onSubmit = async (data) => {
     const formData = new FormData()
     Object.entries(data).forEach(([key, value]) => formData.append(key, value))
+    formData.append("role", "tenant")
     if (file) formData.append("profileImage", file)
     try {
       await dispatch(registerUser(formData)).unwrap()
@@ -135,64 +136,6 @@ const Register = () => {
               {errors.password && <p className="text-xs font-semibold text-red-500">{errors.password.message}</p>}
             </motion.div>
 
-            {/* Role selector */}
-            <motion.div className="space-y-1.5" {...fieldAnim(0.44)}>
-              <Label className="text-sm font-bold text-brown-dark">I am a</Label>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { value: "tenant", label: "Tenant", icon: <Home size={20} />, desc: "Looking to rent" },
-                  { value: "owner", label: "Owner", icon: <Building2 size={20} />, desc: "Listing a property" },
-                ].map((option) => {
-                  const rhfProps = register("role", { required: "Please select a role" })
-                  return (
-                    <label
-                      key={option.value}
-                      className={`
-        relative flex flex-col items-center gap-2 p-4 rounded-card border-2 cursor-pointer
-        transition-all duration-150 select-none
-        ${role === option.value
-                          ? "border-brown-dark bg-beige-card"
-                          : "border-beige-card bg-beige-input hover:border-brown-muted"
-                        }
-      `}
-                    >
-                      <input
-                        type="radio"
-                        value={option.value}
-                        className="hidden"
-                        {...rhfProps}
-                        onChange={(e) => {
-                          rhfProps.onChange(e)
-                          setRole(e.target.value)
-                        }}
-                      />
-                      <span className={`${role === option.value ? "text-brown-dark" : "text-brown-muted"} transition-colors duration-150`}>
-                        {option.icon}
-                      </span>
-                      <span className={`text-sm font-extrabold leading-none ${role === option.value ? "text-brown-dark" : "text-brown-mid"}`}>
-                        {option.label}
-                      </span>
-                      <span className={`text-xs font-semibold leading-none ${role === option.value ? "text-brown-mid" : "text-brown-muted"}`}>
-                        {option.desc}
-                      </span>
-                      {role === option.value && (
-                        <motion.span
-                          className="absolute top-2 right-2 size-4 rounded-full bg-brown-dark flex items-center justify-center"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ duration: 0.2, ease: [0.22, 0.68, 0, 1.2] }}
-                        >
-                          <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                            <path d="M1.5 4L3.2 5.7L6.5 2.5" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </motion.span>
-                      )}
-                    </label>
-                  )
-                })}
-              </div>
-              {errors.role && <p className="text-xs font-semibold text-red-500">{errors.role.message}</p>}
-            </motion.div>
 
             <motion.div className="space-y-1.5" {...fieldAnim(0.5)}>
               <Label className="text-sm font-bold text-brown-dark">Profile Image</Label>

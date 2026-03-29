@@ -36,14 +36,24 @@ const authSlice = createSlice({
 
     builder
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.user = action.payload
-        state.isAuthenticated = true,
-          state.isInitialized = true
+        if (action.payload.role !== "tenant") {
+          state.user = null
+          state.isAuthenticated = false
+        } else {
+          state.user = action.payload
+          state.isAuthenticated = true
+        }
+        state.isInitialized = true
       })
       .addCase(registerUser.fulfilled, (state, action) => {
-        state.user = action.payload,
-          state.isAuthenticated = true,
-          state.isInitialized = true
+        if (action.payload.role !== "tenant") {
+          state.user = null
+          state.isAuthenticated = false
+        } else {
+          state.user = action.payload
+          state.isAuthenticated = true
+        }
+        state.isInitialized = true
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null,
@@ -51,9 +61,14 @@ const authSlice = createSlice({
           state.isInitialized = true
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
-        state.user = action.payload,
-          state.isAuthenticated = true,
-          state.isInitialized = true
+        if (action.payload.role !== "tenant") {
+          state.user = null
+          state.isAuthenticated = false
+        } else {
+          state.user = action.payload
+          state.isAuthenticated = true
+        }
+        state.isInitialized = true
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.user = null,

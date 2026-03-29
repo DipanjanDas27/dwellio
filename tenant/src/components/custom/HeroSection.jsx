@@ -98,77 +98,7 @@ export default function HeroSection() {
         </motion.div>
       </section>
 
-      <motion.div
-        className="flex justify-center px-page relative z-10 -mt-10"
-        initial={{ opacity: 0, y: 50, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ delay: 0.75, duration: 0.6, ease: [0.22, 0.68, 0, 1.1] }}
-      >
-        <div
-          className="
-          bg-beige-card rounded-card shadow-card-md
-          flex items-center
-          px-8 h-25 gap-3
-          w-full max-w-267.5
-        "
-        >
-          <div
-            className="
-            flex-1 flex items-center gap-2.5
-            bg-beige-input rounded-btn h-14.5 px-4
-            text-brown-muted
-            hover:shadow-md transition-shadow duration-150
-          "
-          >
-            <MapPin size={20} className="shrink-0" />
-            <span className="font-bold text-lg text-brown-muted">Location</span>
-          </div>
-
-          <div className="w-px h-10 bg-brown-dark/15 shrink-0" />
-
-          <div
-            className="
-            flex-1 flex items-center gap-2.5
-            bg-beige-input rounded-btn h-14.5 px-4
-            text-brown-muted
-            hover:shadow-md transition-shadow duration-150
-          "
-          >
-            <Home size={20} className="shrink-0" />
-            <span className="font-bold text-lg text-brown-muted">Type</span>
-          </div>
-
-          <div className="w-px h-10 bg-brown-dark/15 shrink-0" />
-
-          <div
-            className="
-            flex-1 flex items-center gap-2.5
-            bg-beige-input rounded-btn h-14.5 px-4
-            text-brown-muted
-            hover:shadow-md transition-shadow duration-150
-          "
-          >
-            <IndianRupee size={20} className="shrink-0" />
-            <span className="font-bold text-lg text-brown-muted">
-              Price Range
-            </span>
-          </div>
-
-          <motion.button
-            className="
-              shrink-0 h-14.5 px-9
-              bg-brown-dark text-white
-              font-semibold text-lg rounded-btn
-              whitespace-nowrap
-              hover:bg-[#1a0f09] transition-colors duration-150
-            "
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            Find Home
-          </motion.button>
-        </div>
-      </motion.div>
+      
     </>
   )
 }

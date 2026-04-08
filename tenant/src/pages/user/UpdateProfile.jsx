@@ -9,6 +9,7 @@ import { getCurrentUser, updateProfile, updateProfileImage, deleteAccount } from
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import ConfirmModal from "@/components/custom/ConfirmModal.jsx"
 
 const FormField = ({ label, icon, error, children }) => (
@@ -80,7 +81,7 @@ const UpdateProfile = () => {
   }
 
   if (!user || loading) return (
-    <div className="min-h-screen bg-cream-bg px-4 py-10 font-montserrat">
+    <div className="min-h-screen bg-cream-bg px-4 sm:px-6 py-8 sm:py-10 font-montserrat">
       <div className="max-w-lg mx-auto">
         <Skeleton className="h-4 w-32 rounded-btn bg-beige-card mb-6" />
         <div className="bg-white rounded-card shadow-card-md overflow-hidden">

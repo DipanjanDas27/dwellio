@@ -39,25 +39,29 @@ const Payments = () => {
   if (loading) return (
     <div className="min-h-screen bg-cream-bg px-4 py-10 font-montserrat">
       <div className="max-w-2xl mx-auto">
-        <Skeleton className="h-8 w-40 rounded-btn bg-beige-card mb-2" />
-        <Skeleton className="h-4 w-52 rounded-btn bg-beige-card mb-8" />
-        <div className="flex gap-2 mb-6">
-          {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-9 w-32 rounded-btn bg-beige-card" />)}
+        <Skeleton className="h-8 w-40 mb-2" />
+        <Skeleton className="h-4 w-52 mb-8" />
+
+        <div className="flex gap-2 mb-6 flex-wrap">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-9 w-28 sm:w-32" />
+          ))}
         </div>
+
         <div className="space-y-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="bg-white rounded-card shadow-card overflow-hidden">
-              <div className="px-5 pt-5 pb-4 border-b border-beige-card/60 flex items-center gap-3">
-                <Skeleton className="size-10 rounded-btn bg-beige-card" />
+              <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-4 border-b flex items-center gap-3">
+                <Skeleton className="size-10" />
                 <div className="flex-1 space-y-2">
-                  <Skeleton className="h-3 w-24 rounded-btn bg-beige-card" />
-                  <Skeleton className="h-4 w-40 rounded-btn bg-beige-card" />
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-4 w-40" />
                 </div>
-                <Skeleton className="h-6 w-20 rounded-full bg-beige-card" />
+                <Skeleton className="h-6 w-20" />
               </div>
-              <div className="px-5 py-4 flex items-center justify-between">
-                <Skeleton className="h-7 w-24 rounded-btn bg-beige-card" />
-                <Skeleton className="h-10 w-20 rounded-btn bg-beige-card" />
+              <div className="px-4 sm:px-5 py-4 flex justify-between">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-9 w-20" />
               </div>
             </div>
           ))}
@@ -72,53 +76,52 @@ const Payments = () => {
         className="max-w-2xl mx-auto"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
       >
+
+        {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="size-11 rounded-btn bg-white flex items-center justify-center shadow-card">
-            <CreditCard size={20} className="text-brown-dark" />
+          <div className="size-10 sm:size-11 bg-white flex items-center justify-center shadow-card">
+            <CreditCard size={18} className="text-brown-dark" />
           </div>
-          <div>
-            <h1 className="text-2xl font-extrabold text-brown-dark leading-none">Payments</h1>
-            <p className="text-sm font-semibold text-brown-muted mt-1">
+
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl font-extrabold truncate">Payments</h1>
+            <p className="text-xs sm:text-sm text-brown-muted">
               {filteredPayments.length} {filter === "all" ? "total" : filter} payment{filteredPayments.length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
 
-
-        <div className="flex items-center gap-2 mb-6 flex-wrap">
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 flex-wrap">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`px-4 py-2 rounded-btn text-sm font-bold transition-colors duration-150 ${filter === tab.key
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-btn font-bold ${
+                filter === tab.key
                   ? "bg-brown-dark text-white"
-                  : "bg-beige-card text-brown-muted hover:bg-beige-input"
-                }`}
+                  : "bg-beige-card text-brown-muted"
+              }`}
             >
               {tab.label}
             </button>
           ))}
         </div>
 
+        {/* Content */}
         {filteredPayments.length === 0 ? (
-          <motion.div
-            className="flex flex-col items-center justify-center py-20 text-center"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div className="size-14 rounded-card bg-beige-card flex items-center justify-center mb-4">
-              <CreditCard size={24} className="text-brown-muted" />
+          <div className="flex flex-col items-center py-20 text-center">
+            <div className="size-14 bg-beige-card flex items-center justify-center mb-4">
+              <CreditCard size={24} />
             </div>
-            <p className="text-base font-bold text-brown-dark mb-1">No payments found</p>
-            <p className="text-sm font-semibold text-brown-muted">
+            <p className="text-base font-bold mb-1">No payments found</p>
+            <p className="text-sm text-brown-muted">
               {filter === "all"
                 ? "You have no payment history yet"
-                : `No ${filter === "monthly" ? "monthly rent" : "security deposit"} payments yet`}
+                : `No ${filter === "monthly" ? "monthly rent" : "security deposit"} payments`}
             </p>
-          </motion.div>
+          </div>
         ) : (
           <div className="space-y-4">
             {filteredPayments.map((payment, i) => (
@@ -126,7 +129,7 @@ const Payments = () => {
                 key={payment.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.07, duration: 0.4 }}
+                transition={{ delay: i * 0.05 }}
               >
                 <PaymentCard payment={payment} onView={handleView} />
               </motion.div>

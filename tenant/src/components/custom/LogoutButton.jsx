@@ -19,7 +19,8 @@ const LogoutButton = () => {
         font-semibold text-sm text-red-600
         hover:text-red-800
         transition-colors duration-150
-        bg-transparent border-none p-0
+        bg-transparent border-none
+        px-2 py-2 sm:px-0 sm:py-0   /* better touch area on mobile */
       "
     >
       Logout

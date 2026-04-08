@@ -23,44 +23,49 @@ const PaymentCard = ({ payment, onView }) => {
     <motion.div
       className="bg-white rounded-card border border-beige-card shadow-card font-montserrat overflow-hidden"
       whileHover={{ y: -4, boxShadow: "0 12px 40px rgba(43,27,18,0.14)" }}
-      transition={{ duration: 0.2 }}
     >
-      <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-beige-card/60">
+      {/* Header */}
+      <div className="flex items-start sm:items-center gap-3 px-4 sm:px-5 pt-4 sm:pt-5 pb-4 border-b border-beige-card/60 flex-wrap">
         <div className="size-10 rounded-btn bg-beige-card flex items-center justify-center shrink-0">
-          <CreditCard size={18} className="text-brown-dark" />
+          <CreditCard size={18} />
         </div>
+
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-brown-muted leading-none mb-1">Transaction ID</p>
+          <p className="text-xs font-semibold text-brown-muted mb-1">Transaction ID</p>
           <p className="text-sm font-bold text-brown-dark truncate">
             {payment.transaction_id || "Not generated"}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize ${classes}`}>
+
+        {/* badges */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[11px] sm:text-xs font-bold capitalize ${classes}`}>
             {icon}
             {payment.payment_status}
           </div>
-          <div className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-beige-card text-brown-muted border border-beige-card/60">
+
+          <div className="inline-flex items-center px-2 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-beige-card text-brown-muted border">
             {payment.payment_type === "monthly" ? "Monthly" : "Security"}
           </div>
         </div>
       </div>
 
-      <div className="px-5 py-4 flex items-center justify-between gap-4">
-        <div className="space-y-1">
-          <p className="text-xs font-semibold text-brown-muted leading-none">Amount</p>
-          <p className="text-xl font-extrabold text-brown-dark leading-none">
+      {/* Body */}
+      <div className="px-4 sm:px-5 py-4 flex items-center justify-between gap-3">
+        <div className="space-y-1 min-w-0">
+          <p className="text-xs font-semibold text-brown-muted">Amount</p>
+          <p className="text-lg sm:text-xl font-extrabold text-brown-dark truncate">
             ₹{Number(payment.amount).toLocaleString("en-IN")}
           </p>
           {payment.payment_type === "monthly" && payment.month_year && (
-            <p className="text-xs font-semibold text-brown-muted">{payment.month_year}</p>
+            <p className="text-xs text-brown-muted">{payment.month_year}</p>
           )}
         </div>
 
         <Button
           variant="outline"
           onClick={() => onView(payment.id)}
-          className="shrink-0 h-10 px-4 rounded-btn border-beige-card text-brown-dark font-semibold text-sm hover:bg-beige-input hover:border-brown-muted transition-colors duration-150 flex items-center gap-1.5"
+          className="shrink-0 h-9 sm:h-10 px-3 sm:px-4 text-sm flex items-center gap-1.5"
         >
           View
           <ArrowRight size={14} />

@@ -61,42 +61,32 @@ function ReviewCard({ r }) {
   return (
     <div className="bg-beige-card rounded-card shadow-card overflow-hidden pb-6 h-full flex flex-col">
       <img
-        className="w-full h-38 object-cover block bg-beige-card shrink-0"
+        className="w-full h-36 sm:h-38 object-cover block bg-beige-card shrink-0"
         src={r.bg}
         alt=""
-        onError={(e) => {
-          e.currentTarget.style.minHeight = "152px"
-        }}
+        onError={(e) => { e.currentTarget.style.minHeight = "144px" }}
       />
 
-      <div className="flex items-end gap-3 px-6 -mt-7 mb-3.5 shrink-0">
+      <div className="flex items-end gap-3 px-4 sm:px-6 -mt-7 mb-3 sm:mb-3.5 shrink-0">
         <img
-          className="w-14.5 h-14.5 rounded-full object-cover border-[3px] border-white shrink-0"
+          className="w-13 h-13 sm:w-14.5 sm:h-14.5 rounded-full object-cover border-[3px] border-white shrink-0"
           src={r.avatar}
           alt={r.name}
-          onError={(e) => {
-            e.currentTarget.src = r.avatarFb
-          }}
+          onError={(e) => { e.currentTarget.src = r.avatarFb }}
         />
 
         <div className="flex-1 pt-7">
-          <div className="text-lg font-bold text-brown-dark leading-tight">
-            {r.name}
-          </div>
-          <div className="text-sm font-semibold text-brown-dark">
-            {r.city}
-          </div>
+          <div className="text-base sm:text-lg font-bold text-brown-dark leading-tight">{r.name}</div>
+          <div className="text-xs sm:text-sm font-semibold text-brown-dark">{r.city}</div>
         </div>
 
         <div className="flex items-center gap-1 bg-white rounded px-2 py-1 mt-7 shrink-0">
-          <Star size={13} fill="#f59e0b" stroke="none" />
-          <span className="text-sm font-semibold text-brown-dark">
-            {r.rating}
-          </span>
+          <Star size={12} fill="#f59e0b" stroke="none" />
+          <span className="text-xs sm:text-sm font-semibold text-brown-dark">{r.rating}</span>
         </div>
       </div>
 
-      <p className="text-sm font-semibold leading-normal text-brown-mid px-6 flex-1">
+      <p className="text-xs sm:text-sm font-semibold leading-normal text-brown-mid px-4 sm:px-6 flex-1">
         {r.text}
       </p>
     </div>
@@ -111,10 +101,15 @@ export default function TestimonialsSection() {
     <section
       id="testimonials"
       ref={ref}
-      className="bg-cream-bg px-page py-25 font-montserrat"
+      className="
+        bg-cream-bg
+        px-4 sm:px-6 lg:px-page
+        py-16 sm:py-20 lg:py-25
+        font-montserrat
+      "
     >
       <motion.h2
-        className="text-4xl font-extrabold text-brown-dark leading-[1.4] mb-14 text-center"
+        className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-brown-dark leading-[1.4] mb-10 sm:mb-12 lg:mb-14 text-center"
         initial={{ opacity: 0, y: 24 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6 }}
@@ -126,17 +121,22 @@ export default function TestimonialsSection() {
         initial={{ opacity: 0, y: 40 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ delay: 0.15, duration: 0.6 }}
-        className="relative px-12"
+        // px-10 on mobile gives enough room for arrows, px-12 on larger screens
+        className="relative px-10 sm:px-12"
       >
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
-          <CarouselContent className="-ml-6">
+          <CarouselContent className="-ml-4 sm:-ml-6">
             {REVIEWS.map((r, i) => (
-              <CarouselItem key={i} className="pl-6 md:basis-1/2 lg:basis-1/3">
+              <CarouselItem
+                key={i}
+                // 1 card mobile, 2 on sm, 3 on lg
+                className="pl-4 sm:pl-6 basis-full sm:basis-1/2 lg:basis-1/3"
+              >
                 <motion.div
                   className="h-full"
                   initial={{ opacity: 0, y: 48, scale: 0.94 }}
                   animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-                  transition={{ delay: 0.2 + i * 0.1, duration: 0.55 }}
+                  transition={{ delay: 0.2 + i * 0.08, duration: 0.55 }}
                   whileHover={{ y: -6, transition: { duration: 0.2 } }}
                 >
                   <ReviewCard r={r} />
@@ -147,17 +147,16 @@ export default function TestimonialsSection() {
 
           <CarouselPrevious
             className="
-              -left-2 w-12 h-12
+              -left-2 sm:-left-2 w-10 h-10 sm:w-12 sm:h-12
               bg-beige-card border-2 border-brown-dark
               text-brown-dark rounded-full
               hover:bg-brown-dark hover:text-white
               transition-colors duration-150
             "
           />
-
           <CarouselNext
             className="
-              -right-2 w-12 h-12
+              -right-2 sm:-right-2 w-10 h-10 sm:w-12 sm:h-12
               bg-beige-card border-2 border-brown-dark
               text-brown-dark rounded-full
               hover:bg-brown-dark hover:text-white

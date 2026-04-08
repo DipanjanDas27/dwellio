@@ -67,10 +67,15 @@ const FeaturedProperties = () => {
   return (
     <section
       ref={ref}
-      className="bg-white px-page py-25 font-montserrat"
+      className="
+        bg-white
+        px-4 sm:px-6 lg:px-page
+        py-16 sm:py-20 lg:py-25
+        font-montserrat
+      "
     >
       <motion.h2
-        className="text-4xl font-extrabold text-brown-dark leading-[1.4] mb-14 text-center"
+        className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-brown-dark leading-[1.4] mb-10 sm:mb-12 lg:mb-14 text-center"
         initial={{ opacity: 0, y: 24 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6 }}
@@ -79,15 +84,19 @@ const FeaturedProperties = () => {
       </motion.h2>
 
       <motion.div
-        className="relative px-12"
+        className="relative px-10 sm:px-12"
         initial={{ opacity: 0, y: 40 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ delay: 0.15, duration: 0.6 }}
       >
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
-          <CarouselContent className="-ml-7">
+          <CarouselContent className="-ml-4 sm:-ml-6 lg:-ml-7">
             {demoProperties.map((p, i) => (
-              <CarouselItem key={p.id} className="pl-7 md:basis-1/2 lg:basis-1/3">
+              <CarouselItem
+                key={p.id}
+                // 1 card mobile, 2 on md, 3 on lg
+                className="pl-4 sm:pl-6 lg:pl-7 basis-full sm:basis-1/2 lg:basis-1/3"
+              >
                 <motion.div
                   initial={{ opacity: 0, y: 48, scale: 0.94 }}
                   animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
@@ -101,17 +110,16 @@ const FeaturedProperties = () => {
 
           <CarouselPrevious
             className="
-              -left-2 w-12 h-12
+              -left-2 w-10 h-10 sm:w-12 sm:h-12
               bg-beige-card border-2 border-brown-dark
               text-brown-dark rounded-full
               hover:bg-brown-dark hover:text-white
               transition-colors duration-150
             "
           />
-
           <CarouselNext
             className="
-              -right-2 w-12 h-12
+              -right-2 w-10 h-10 sm:w-12 sm:h-12
               bg-beige-card border-2 border-brown-dark
               text-brown-dark rounded-full
               hover:bg-brown-dark hover:text-white

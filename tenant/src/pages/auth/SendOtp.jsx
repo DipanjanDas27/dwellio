@@ -44,8 +44,9 @@ const SendOtp = () => {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 0.68, 0, 1.1] }}
       >
-        <div className="bg-white rounded-card shadow-card-md px-10 py-10">
+        <div className="bg-white rounded-card shadow-card-md px-6 sm:px-10 py-8 sm:py-10">
 
+          {/* Header */}
           <motion.div
             className="flex flex-col items-center mb-8"
             initial={{ opacity: 0, y: -16 }}
@@ -61,16 +62,19 @@ const SendOtp = () => {
             <div className="size-14 rounded-card bg-beige-card flex items-center justify-center mb-4">
               <Send size={24} className="text-brown-dark" />
             </div>
-            <h1 className="text-2xl font-extrabold text-brown-dark tracking-tight">Send OTP</h1>
-            <p className="text-sm font-semibold text-brown-muted mt-1 text-center">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-brown-dark tracking-tight">
+              Send OTP
+            </h1>
+            <p className="text-xs sm:text-sm font-semibold text-brown-muted mt-1 text-center">
               {isAuthenticated
                 ? "We'll send a verification code to your registered email"
                 : "Enter your email to receive a verification code"}
             </p>
           </motion.div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
 
+            {/* Email input (only if not logged in) */}
             {!isAuthenticated && (
               <motion.div
                 className="space-y-1.5"
@@ -84,7 +88,7 @@ const SendOtp = () => {
                   <Input
                     type="email"
                     placeholder="you@example.com"
-                    className="pl-10 h-12 bg-beige-input border-beige-card rounded-btn text-brown-dark font-semibold placeholder:text-brown-muted/60 focus-visible:ring-brown-dark/30 focus-visible:border-brown-dark"
+                    className="pl-10 h-11 sm:h-12 bg-beige-input border-beige-card rounded-btn text-brown-dark font-semibold placeholder:text-brown-muted/60 focus-visible:ring-brown-dark/30 focus-visible:border-brown-dark min-w-0"
                     {...register("email", { required: "Email is required" })}
                   />
                 </div>
@@ -94,51 +98,38 @@ const SendOtp = () => {
               </motion.div>
             )}
 
+            {/* Logged-in email display */}
             {isAuthenticated && (
               <motion.div
-                className="flex items-center gap-3 p-4 bg-beige-input border border-beige-card rounded-card"
+                className="flex items-center gap-2.5 p-3 sm:p-4 bg-beige-input border border-beige-card rounded-card"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.25, duration: 0.45 }}
               >
-                <div className="size-9 rounded-btn bg-beige-card flex items-center justify-center shrink-0">
-                  <Mail size={16} className="text-brown-dark" />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-brown-muted leading-none mb-1">OTP will be sent to</p>
-                  <p className="text-sm font-bold text-brown-dark leading-none">{user?.email}</p>
-                </div>
+                <Mail size={16} className="text-brown-dark shrink-0" />
+                <span className="text-sm font-semibold text-brown-dark truncate w-full">
+                  {user?.email}
+                </span>
               </motion.div>
             )}
 
+            {/* Buttons */}
             <motion.div
               className="space-y-3 pt-2"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.45 }}
             >
               <Button
                 type="submit"
                 disabled={(!isAuthenticated && !isValid) || loading}
-                className="w-full h-12 bg-brown-dark hover:bg-[#1a0f09] text-white font-semibold text-base rounded-btn transition-colors duration-150"
+                className="w-full h-11 sm:h-12 bg-brown-dark hover:bg-[#1a0f09] text-white font-semibold text-base rounded-btn"
               >
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="size-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                    Sending...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <Send size={16} />
-                    Send OTP
-                  </span>
-                )}
+                {loading ? "Sending..." : "Send OTP"}
               </Button>
 
               <Button
                 type="button"
                 variant="outline"
-                className="w-full h-12 border-beige-card text-brown-dark font-semibold text-base rounded-btn hover:bg-beige-input transition-colors duration-150"
+                className="w-full h-11 sm:h-12 border-beige-card text-brown-dark font-semibold text-base rounded-btn"
                 onClick={() => navigate(-1)}
               >
                 Go Back

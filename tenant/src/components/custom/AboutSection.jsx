@@ -37,10 +37,10 @@ function StatItem({ stat, started }) {
 
   return (
     <div>
-      <div className="text-5xl font-bold text-brown-light leading-none mb-2">
+      <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-brown-light leading-none mb-1.5 sm:mb-2">
         {display}
       </div>
-      <div className="text-lg font-semibold text-brown-light">
+      <div className="text-sm sm:text-base lg:text-lg font-semibold text-brown-light">
         {stat.label}
       </div>
     </div>
@@ -55,10 +55,24 @@ export default function AboutSection() {
     <section
       id="about"
       ref={ref}
-      className="bg-white px-page py-30 flex items-center gap-20 font-montserrat"
+      className="
+        bg-white
+        px-4 sm:px-6 lg:px-page
+        py-16 sm:py-20 lg:py-30
+        flex flex-col lg:flex-row
+        items-center
+        gap-10 sm:gap-14 lg:gap-20
+        font-montserrat
+      "
     >
+      {/* Image */}
       <motion.div
-        className="flex-none w-140 h-125 rounded-card overflow-hidden shadow-card-md relative"
+        className="
+          w-full max-w-sm sm:max-w-md lg:flex-none lg:w-140
+          h-64 sm:h-80 lg:h-125
+          rounded-card overflow-hidden shadow-card-md relative
+          shrink-0
+        "
         initial={{ opacity: 0, x: -70, rotate: -2 }}
         animate={inView ? { opacity: 1, x: 0, rotate: 0 } : {}}
         transition={{ duration: 0.8, ease: [0.22, 0.68, 0, 1.1] }}
@@ -67,32 +81,31 @@ export default function AboutSection() {
           src={ABOUT_IMG}
           alt="Luxury home"
           className="w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = FALLBACK
-          }}
+          onError={(e) => { e.currentTarget.src = FALLBACK }}
         />
 
         <motion.div
-          className="absolute bottom-6 right-6 bg-brown-dark text-white px-5 py-3.5 rounded-card shadow-card"
+          className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 bg-brown-dark text-white px-4 py-3 sm:px-5 sm:py-3.5 rounded-card shadow-card"
           initial={{ opacity: 0, scale: 0.7, y: 20 }}
           animate={inView ? { opacity: 1, scale: 1, y: 0 } : {}}
           transition={{ delay: 0.5, duration: 0.5, ease: [0.22, 0.68, 0, 1.2] }}
         >
-          <div className="text-3xl font-extrabold leading-none">15+</div>
+          <div className="text-2xl sm:text-3xl font-extrabold leading-none">15+</div>
           <div className="text-xs font-semibold opacity-85 mt-1">
             Years in Real Estate
           </div>
         </motion.div>
       </motion.div>
 
+      {/* Text */}
       <motion.div
-        className="flex-1"
+        className="flex-1 text-center lg:text-left"
         initial={{ opacity: 0, x: 70 }}
         animate={inView ? { opacity: 1, x: 0 } : {}}
         transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 0.68, 0, 1.1] }}
       >
         <motion.h2
-          className="text-4xl font-extrabold leading-[1.4] text-brown-dark max-w-128.5 mb-6"
+          className="text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-[1.4] text-brown-dark mb-4 sm:mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.25, duration: 0.6 }}
@@ -101,7 +114,7 @@ export default function AboutSection() {
         </motion.h2>
 
         <motion.p
-          className="text-lg font-bold leading-[1.6] text-brown-mid max-w-128.5 mb-14"
+          className="text-base sm:text-lg font-bold leading-[1.6] text-brown-mid mb-10 sm:mb-14"
           initial={{ opacity: 0, y: 16 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.35, duration: 0.6 }}
@@ -111,7 +124,8 @@ export default function AboutSection() {
           becomes a reality
         </motion.p>
 
-        <div className="flex gap-16">
+        {/* Stats — 3 cols on all sizes, just scale text */}
+        <div className="flex justify-center lg:justify-start gap-8 sm:gap-12 lg:gap-16">
           {STATS.map((s, i) => (
             <motion.div
               key={s.label}
